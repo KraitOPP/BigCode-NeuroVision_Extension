@@ -44,8 +44,6 @@
    - [Transform Page (Reader Mode)](#transform-page-reader-mode)
 10. [Model Evaluation & Testing](#model-evaluation--testing)
 11. [Performance & Scalability](#performance--scalability)
-12. [Hackathon Evaluation Notes](#hackathon-evaluation-notes)
-
 ---
 
 ## Project Structure
