@@ -7,7 +7,15 @@
 
 <div align="center">
 
-[![Watch Demo](https://img.shields.io/badge/▶%20Watch%20Demo-Google%20Drive-blue?style=for-the-badge&logo=googledrive)](https://drive.google.com/file/d/15xhLsplCyYDejSOyJa_hvyfDxK41CtlD/view?usp=sharing)
+  <h2>🎥 Live Demo</h2>
+
+  <a href="https://drive.google.com/file/d/15xhLsplCyYDejSOyJa_hvyfDxK41CtlD/view?usp=sharing" target="_blank">
+    <img src="https://img.shields.io/badge/▶%20Watch%20Full%20Demo-Google%20Drive-blue?style=for-the-badge&logo=googledrive&logoColor=white&labelColor=4285F4&size=large" 
+         alt="Watch Demo" 
+         height="70">
+  </a>
+
+  <p><em>Click above to watch Demo of NeuroVision Extension</em></p>
 
 </div>
 
@@ -15,17 +23,18 @@
 
 ## Table of Contents
 
-1. [What is NeuroVision?](#what-is-neurovision)
-2. [The Problem We Solve](#the-problem-we-solve)
-3. [Architecture Overview](#architecture-overview)
-4. [Technology Stack](#technology-stack)
-5. [AI Models & Configuration](#ai-models--configuration)
-6. [Core Algorithms & Data Structures](#core-algorithms--data-structures)
-7. [Installation & Setup](#installation--setup)
+1. [Project Structure](#project-structure)
+2. [What is NeuroVision?](#what-is-neurovision)
+3. [The Problem We Solve](#the-problem-we-solve)
+4. [Architecture Overview](#architecture-overview)
+5. [Technology Stack](#technology-stack)
+6. [AI Models & Configuration](#ai-models--configuration)
+7. [Core Algorithms & Data Structures](#core-algorithms--data-structures)
+8. [Installation & Setup](#installation--setup)
    - [Prerequisites](#prerequisites)
    - [Load the Extension](#load-the-extension)
    - [AI Provider Setup (Gemini / Groq / Ollama)](#ai-provider-setup)
-8. [How to Use — Feature Guide](#how-to-use--feature-guide)
+9. [How to Use — Feature Guide](#how-to-use--feature-guide)
    - [Popup Interface](#popup-interface)
    - [ADHD Profile](#adhd-profile)
    - [Autism Profile](#autism-profile)
@@ -33,13 +42,97 @@
    - [AI Side Panel](#ai-side-panel)
    - [Speak Selection (TTS)](#speak-selection-tts)
    - [Transform Page (Reader Mode)](#transform-page-reader-mode)
-9. [Model Evaluation & Testing](#model-evaluation--testing)
-10. [Performance & Scalability](#performance--scalability)
-11. [Project Structure](#project-structure)
-12. [The .env File](#the-env-file)
-13. [Hackathon Evaluation Notes](#hackathon-evaluation-notes)
+10. [Model Evaluation & Testing](#model-evaluation--testing)
+11. [Performance & Scalability](#performance--scalability)
+12. [Hackathon Evaluation Notes](#hackathon-evaluation-notes)
 
 ---
+
+## Project Structure
+
+```
+NeuroVision/
+├── manifest.json                  # Chrome MV3 manifest
+├── start_ollama.ps1               # Windows: start Ollama with correct CORS settings
+├── start_ollama.bat               # Windows batch alternative
+│
+├── background/
+│   ├── service-worker.js          # Extension lifecycle, routes all messages
+│   ├── ai.js                      # Gemini, Groq + Ollama generation (fetch, prompt building)
+│   ├── messages.js                # Message handler registry
+│   ├── storage.js                 # Settings persistence in chrome.storage.local
+│   ├── health.js                  # Provider health check endpoints
+│   └── constants.js               # Shared constants, DEFAULT_SETTINGS
+│
+├── content/
+│   ├── content.js                 # Entry point: boots orchestrator, registers keyboard shortcuts
+│   └── modules/
+│       ├── ADHDModule.js          # Reading ruler, focus tunnel, ad removal, content chunking
+│       ├── AutismModule.js        # Sensory dial, CSS filter, animation removal, spacing
+│       ├── DyslexiaModule.js      # Fonts, spacing, syllable rainbow, beeline, ruler
+│       ├── TTSModule.js           # Web Speech API, selection tooltip, mini control bar
+│       ├── PageTransformer.js     # Reader mode DOM rebuild
+│       ├── ReadabilityScorer.js   # Content extraction, metrics computation
+│       ├── DOMAnalyzer.js         # Ad/distraction detection heuristics
+│       ├── OllamaClient.js        # Direct Ollama API client for content-side calls
+│       ├── ContentOrchestrator.js # Init, settings change handler, profile activation
+│       ├── ContentMessaging.js    # chrome.runtime.onMessage router
+│       ├── ContentAsyncApply.js   # Parallel LLM processing jobs
+│       ├── ContentPageApply.js    # Apply LLM results to DOM (simplify, summary, concepts)
+│       ├── ContentAiPanel.js      # Floating AI result panel (draggable)
+│       ├── ContentLoadingOverlay.js # Loading spinner overlay
+│       ├── ContentState.js        # Shared state singleton
+│       └── ContentTransform.js   # Page transform trigger
+│
+├── popup/
+│   ├── popup.html                 # Extension popup UI
+│   ├── popup.css                  # Popup styles
+│   ├── popup.js                   # Entry point
+│   └── modules/
+│       ├── popup-core.js          # Shared state, send helpers, $ utility
+│       ├── popup-settings.js      # Settings render, profile/setting change handlers
+│       ├── popup-metrics.js       # Metrics bar data fetch and display
+│       ├── popup-ai.js            # Transform, AI output display
+│       └── popup-listeners.js     # All DOM event listeners
+│
+├── sidepanel/
+│   ├── sidepanel.html             # AI Panel UI (tabs: Simplify, Summary, Concepts, Speak, Ask, Settings)
+│   ├── sidepanel.css              # Panel styles
+│   ├── sidepanel.js               # Tab switching, init, active-tab listener
+│   └── modules/
+│       ├── sp-core.js             # NVSP namespace, messaging helpers
+│       ├── sp-data.js             # Page metrics loading
+│       ├── sp-settings.js         # AI provider config (Gemini / Groq / Ollama), save/load, connection test
+│       └── sp-ai.js               # Simplify, summarize, concepts, TTS, chat, SSE streaming (Gemini + Groq)
+│
+├── utils/
+│   ├── algorithms.js              # FK grade, FRE, cognitive load, syllables, chunking
+│   ├── cache.js                   # LRU cache with djb2 fingerprinting
+│   ├── config.js                  # Domain-level config helpers
+│   ├── groqUrl.js                 # Groq base URL normalization
+│   ├── geminiClient.js            # Gemini REST client (streamGenerateContent + generateContent)
+│   ├── messaging.js               # MSG constants, send/sendToTab/listen wrappers
+│   └── storage.js                 # Settings read/write, deepMerge, domain overrides
+│
+├── styles/
+│   ├── base.css                   # Reset, shared utility classes
+│   ├── adhd.css                   # Reading ruler, focus tunnel, chunk dividers, badge
+│   ├── autism.css                 # Sensory filter classes, spacing normalization
+│   ├── dyslexia.css               # Font injection, syllable colors, beeline overlay
+│   └── reader-mode.css            # Full reader mode layout and typography
+│
+├── icons/
+│   ├── icon16.png
+│   ├── icon32.png
+│   ├── icon48.png
+│   └── icon128.png
+│
+└── tests/
+    ├── test_runner.html           # Browser-based test runner
+    ├── test_algorithms.js         # Unit tests for all algorithms (Node.js + browser)
+    ├── evaluation.js              # Full evaluation framework against dataset
+    └── evaluation_dataset.json    # 30 labeled text samples with expected scores
+```
 
 ## What is NeuroVision?
 
@@ -766,88 +859,3 @@ All prompts use `temperature=0.3` and `seed=42` (Ollama) for reproducibility —
 
 ---
 
-## Project Structure
-
-```
-NeuroVision/
-├── manifest.json                  # Chrome MV3 manifest
-├── start_ollama.ps1               # Windows: start Ollama with correct CORS settings
-├── start_ollama.bat               # Windows batch alternative
-│
-├── background/
-│   ├── service-worker.js          # Extension lifecycle, routes all messages
-│   ├── ai.js                      # Gemini, Groq + Ollama generation (fetch, prompt building)
-│   ├── messages.js                # Message handler registry
-│   ├── storage.js                 # Settings persistence in chrome.storage.local
-│   ├── health.js                  # Provider health check endpoints
-│   └── constants.js               # Shared constants, DEFAULT_SETTINGS
-│
-├── content/
-│   ├── content.js                 # Entry point: boots orchestrator, registers keyboard shortcuts
-│   └── modules/
-│       ├── ADHDModule.js          # Reading ruler, focus tunnel, ad removal, content chunking
-│       ├── AutismModule.js        # Sensory dial, CSS filter, animation removal, spacing
-│       ├── DyslexiaModule.js      # Fonts, spacing, syllable rainbow, beeline, ruler
-│       ├── TTSModule.js           # Web Speech API, selection tooltip, mini control bar
-│       ├── PageTransformer.js     # Reader mode DOM rebuild
-│       ├── ReadabilityScorer.js   # Content extraction, metrics computation
-│       ├── DOMAnalyzer.js         # Ad/distraction detection heuristics
-│       ├── OllamaClient.js        # Direct Ollama API client for content-side calls
-│       ├── ContentOrchestrator.js # Init, settings change handler, profile activation
-│       ├── ContentMessaging.js    # chrome.runtime.onMessage router
-│       ├── ContentAsyncApply.js   # Parallel LLM processing jobs
-│       ├── ContentPageApply.js    # Apply LLM results to DOM (simplify, summary, concepts)
-│       ├── ContentAiPanel.js      # Floating AI result panel (draggable)
-│       ├── ContentLoadingOverlay.js # Loading spinner overlay
-│       ├── ContentState.js        # Shared state singleton
-│       └── ContentTransform.js   # Page transform trigger
-│
-├── popup/
-│   ├── popup.html                 # Extension popup UI
-│   ├── popup.css                  # Popup styles
-│   ├── popup.js                   # Entry point
-│   └── modules/
-│       ├── popup-core.js          # Shared state, send helpers, $ utility
-│       ├── popup-settings.js      # Settings render, profile/setting change handlers
-│       ├── popup-metrics.js       # Metrics bar data fetch and display
-│       ├── popup-ai.js            # Transform, AI output display
-│       └── popup-listeners.js     # All DOM event listeners
-│
-├── sidepanel/
-│   ├── sidepanel.html             # AI Panel UI (tabs: Simplify, Summary, Concepts, Speak, Ask, Settings)
-│   ├── sidepanel.css              # Panel styles
-│   ├── sidepanel.js               # Tab switching, init, active-tab listener
-│   └── modules/
-│       ├── sp-core.js             # NVSP namespace, messaging helpers
-│       ├── sp-data.js             # Page metrics loading
-│       ├── sp-settings.js         # AI provider config (Gemini / Groq / Ollama), save/load, connection test
-│       └── sp-ai.js               # Simplify, summarize, concepts, TTS, chat, SSE streaming (Gemini + Groq)
-│
-├── utils/
-│   ├── algorithms.js              # FK grade, FRE, cognitive load, syllables, chunking
-│   ├── cache.js                   # LRU cache with djb2 fingerprinting
-│   ├── config.js                  # Domain-level config helpers
-│   ├── groqUrl.js                 # Groq base URL normalization
-│   ├── geminiClient.js            # Gemini REST client (streamGenerateContent + generateContent)
-│   ├── messaging.js               # MSG constants, send/sendToTab/listen wrappers
-│   └── storage.js                 # Settings read/write, deepMerge, domain overrides
-│
-├── styles/
-│   ├── base.css                   # Reset, shared utility classes
-│   ├── adhd.css                   # Reading ruler, focus tunnel, chunk dividers, badge
-│   ├── autism.css                 # Sensory filter classes, spacing normalization
-│   ├── dyslexia.css               # Font injection, syllable colors, beeline overlay
-│   └── reader-mode.css            # Full reader mode layout and typography
-│
-├── icons/
-│   ├── icon16.png
-│   ├── icon32.png
-│   ├── icon48.png
-│   └── icon128.png
-│
-└── tests/
-    ├── test_runner.html           # Browser-based test runner
-    ├── test_algorithms.js         # Unit tests for all algorithms (Node.js + browser)
-    ├── evaluation.js              # Full evaluation framework against dataset
-    └── evaluation_dataset.json    # 30 labeled text samples with expected scores
-```
