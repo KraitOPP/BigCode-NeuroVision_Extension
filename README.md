@@ -3,7 +3,13 @@
 > **AI-powered browser accessibility extension for ADHD, Autism Spectrum, and Dyslexia.**  
 > Transforms any webpage in real-time using local and cloud LLMs, pure-JS readability algorithms, and zero-dependency DOM engineering.
 
-![NeuroVision Banner](images\neurovision_banner.svg)
+![NeuroVision Banner](images/neurovision_banner.svg)
+
+<div align="center">
+
+[![Watch Demo](https://img.shields.io/badge/▶%20Watch%20Demo-Google%20Drive-blue?style=for-the-badge&logo=googledrive)](https://drive.google.com/file/d/15xhLsplCyYDejSOyJa_hvyfDxK41CtlD/view?usp=sharing)
+
+</div>
 
 ---
 
