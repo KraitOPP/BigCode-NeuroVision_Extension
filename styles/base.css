@@ -1,0 +1,204 @@
+/**
+ * NeuroVision — Base Styles
+ * Injected into every page. Contains shared UI elements used by all modules.
+ * Uses nv- prefix on all IDs/classes to avoid conflicts.
+ */
+
+/* ─── Reading Ruler (shared) ───────────────────────────────────────────────── */
+#nv-reading-ruler,
+#nv-dyslexia-ruler {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  z-index: 2147483640;
+  transition: top 0.04s linear;
+}
+
+/* ADHD ruler — wide amber band covering ~2 lines */
+#nv-reading-ruler {
+  height: 42px;
+  background: rgba(255, 210, 60, 0.22);
+  border-top: 2px solid rgba(220, 160, 0, 0.45);
+  border-bottom: 2px solid rgba(220, 160, 0, 0.45);
+}
+
+/* Dyslexia ruler — blue band covering ~2 lines */
+#nv-dyslexia-ruler {
+  height: 38px;
+  background: rgba(80, 160, 240, 0.16);
+  border-top: 2px solid rgba(50, 120, 210, 0.45);
+  border-bottom: 2px solid rgba(50, 120, 210, 0.45);
+}
+
+/* ─── Focus Tunnel ────────────────────────────────────────────────────────── */
+#nv-focus-tunnel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 2147483641;
+  transition: background 0.1s;
+}
+
+/* Focused paragraph highlight */
+.nv-focused-para {
+  background: rgba(255, 253, 230, 0.97) !important;
+  border-left: 4px solid #F59E0B !important;
+  padding-left: 10px !important;
+  border-radius: 0 4px 4px 0 !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Reading Time Badge ──────────────────────────────────────────────────── */
+#nv-reading-badge {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  background: #1E293B;
+  color: #E2E8F0;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  z-index: 2147483645;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  user-select: none;
+  cursor: default;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.nv-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nv-badge-icon { font-size: 14px; }
+
+.nv-badge-time {
+  font-weight: 700;
+  font-size: 13px;
+  color: #F59E0B;
+}
+
+.nv-badge-label {
+  font-size: 11px;
+  color: #94A3B8;
+}
+
+/* ─── Chunk Break Dividers (ADHD) ─────────────────────────────────────────── */
+.nv-chunk-break {
+  display: flex;
+  align-items: center;
+  margin: 32px 0 28px;
+  gap: 12px;
+}
+
+.nv-chunk-break::before,
+.nv-chunk-break::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(to right, transparent, rgba(74,111,165,0.2), transparent);
+}
+
+.nv-chunk-label {
+  font-size: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #4A6FA5;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: #EFF6FF;
+  border: 1px solid rgba(74,111,165,0.25);
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+/* ─── Keyword Highlights (ADHD) ───────────────────────────────────────────── */
+mark.nv-keyword {
+  background: rgba(255, 235, 59, 0.55);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 2px;
+  cursor: help;
+}
+
+/* ─── Restore Button (simplified text) ───────────────────────────────────── */
+.nv-restore-btn {
+  background: none;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 8px;
+  color: rgba(0, 0, 0, 0.5);
+  vertical-align: middle;
+}
+
+.nv-restore-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+/* ─── Autism Figurative Language Tooltip ─────────────────────────────────── */
+#nv-autism-tooltip {
+  display: none;
+  position: absolute;
+  background: #2D2D2D;
+  color: #F5F5F5;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  max-width: 280px;
+  z-index: 2147483644;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+#nv-autism-tooltip::after {
+  content: "💡 Plain language";
+  display: block;
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 4px;
+}
+
+/* ─── Dyslexia Word Tooltip ───────────────────────────────────────────────── */
+#nv-word-tooltip {
+  display: none;
+  position: absolute;
+  background: #1A3A5C;
+  color: #F0F4FF;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 300px;
+  z-index: 2147483644;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-left: 3px solid #4A90D9;
+}
+
+/* ─── Syllable Spans ──────────────────────────────────────────────────────── */
+.nv-syl-word {
+  display: inline;
+}
+
+.nv-syl {
+  display: inline;
+  font-style: inherit;
+  font-weight: inherit;
+}

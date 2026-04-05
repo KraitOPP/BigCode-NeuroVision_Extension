@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeuroVision</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+<!-- ─── Header ──────────────────────────────────────────────────────────────── -->
+<header class="nv-header">
+  <div class="nv-header-left">
+    <span class="nv-logo" aria-hidden="true">🧠</span>
+    <div>
+      <h1 class="nv-title">NeuroVision</h1>
+      <p class="nv-subtitle" id="domain-label">Loading…</p>
+    </div>
+  </div>
+  <div class="nv-header-right">
+    <label class="nv-toggle-wrap" aria-label="Enable NeuroVision">
+      <input type="checkbox" id="main-toggle" role="switch" />
+      <span class="nv-toggle-slider"></span>
+    </label>
+  </div>
+</header>
+
+<!-- ─── Metrics Bar ──────────────────────────────────────────────────────────── -->
+<section class="nv-metrics-bar" id="metrics-bar" aria-label="Page metrics">
+  <div class="nv-metric" id="metric-grade" title="Reading Grade Level">
+    <span class="nv-metric-icon">📚</span>
+    <span class="nv-metric-value" id="m-grade">—</span>
+    <span class="nv-metric-label">Grade</span>
+  </div>
+  <div class="nv-metric" id="metric-load" title="Cognitive Load Score (0-100)">
+    <span class="nv-metric-icon">🧩</span>
+    <span class="nv-metric-value" id="m-load">—</span>
+    <span class="nv-metric-label">CogLoad</span>
+  </div>
+  <div class="nv-metric" id="metric-time" title="Estimated Reading Time">
+    <span class="nv-metric-icon">⏱️</span>
+    <span class="nv-metric-value" id="m-time">—</span>
+    <span class="nv-metric-label">Read Time</span>
+  </div>
+  <div class="nv-metric" id="metric-words" title="Word Count">
+    <span class="nv-metric-icon">📝</span>
+    <span class="nv-metric-value" id="m-words">—</span>
+    <span class="nv-metric-label">Words</span>
+  </div>
+</section>
+
+<!-- ─── Profile Selector ─────────────────────────────────────────────────────── -->
+<section class="nv-section" aria-labelledby="profiles-heading">
+  <h2 class="nv-section-title" id="profiles-heading">Accessibility Profiles</h2>
+  <p class="nv-hint">You can enable multiple profiles simultaneously.</p>
+
+  <div class="nv-profile-grid">
+
+    <button class="nv-profile-card" id="profile-adhd" data-profile="adhd"
+            aria-pressed="false" aria-label="ADHD profile">
+      <span class="nv-profile-icon" aria-hidden="true">⚡</span>
+      <span class="nv-profile-name">ADHD</span>
+      <span class="nv-profile-desc">Focus, reduce clutter</span>
+      <span class="nv-profile-badge" aria-hidden="true">OFF</span>
+    </button>
+
+    <button class="nv-profile-card" id="profile-autism" data-profile="autism"
+            aria-pressed="false" aria-label="Autism profile">
+      <span class="nv-profile-icon" aria-hidden="true">🎨</span>
+      <span class="nv-profile-name">Autism</span>
+      <span class="nv-profile-desc">Calm colors, no motion</span>
+      <span class="nv-profile-badge" aria-hidden="true">OFF</span>
+    </button>
+
+    <button class="nv-profile-card" id="profile-dyslexia" data-profile="dyslexia"
+            aria-pressed="false" aria-label="Dyslexia profile">
+      <span class="nv-profile-icon" aria-hidden="true">🔤</span>
+      <span class="nv-profile-name">Dyslexia</span>
+      <span class="nv-profile-desc">Fonts, spacing, guides</span>
+      <span class="nv-profile-badge" aria-hidden="true">OFF</span>
+    </button>
+
+  </div>
+</section>
+
+<!-- ─── AI Actions ───────────────────────────────────────────────────────────── -->
+<section class="nv-section" aria-labelledby="ai-heading">
+  <h2 class="nv-section-title" id="ai-heading">
+    AI Actions
+    <span class="nv-ollama-status" id="ollama-status" title="Ollama connection status">●</span>
+    <span class="nv-model-label" id="model-label">gemma3:4b</span>
+  </h2>
+
+  <!-- AI Panel Hero CTA — pinned at top -->
+  <button class="nv-ai-panel-cta" id="btn-sidepanel" aria-label="Open AI side panel">
+    <span class="nv-ai-panel-cta-icon">✨</span>
+    <div class="nv-ai-panel-cta-text">
+      <span class="nv-ai-panel-cta-title">Open AI Panel</span>
+      <span class="nv-ai-panel-cta-sub">Chat · Simplify · Summarize in depth</span>
+    </div>
+    <span class="nv-ai-panel-cta-arrow">↗</span>
+  </button>
+
+  <!-- Primary: Transform Page -->
+  <button class="nv-transform-btn" id="btn-transform" aria-label="Transform page into reader mode">
+    <span class="nv-transform-icon">🔮</span>
+    <div>
+      <div class="nv-transform-title">Transform Page</div>
+      <div class="nv-transform-sub">AI reads &amp; rebuilds this page for your brain</div>
+    </div>
+  </button>
+
+
+
+
+<!-- ─── Quick Settings: ADHD ─────────────────────────────────────────────────── -->
+<section class="nv-section nv-collapsible" id="settings-adhd" hidden
+         aria-labelledby="adhd-settings-heading">
+  <button class="nv-section-title nv-collapse-btn" id="adhd-settings-heading"
+          aria-expanded="true" aria-controls="adhd-settings-body">
+    ⚡ ADHD Settings
+    <span class="nv-collapse-arrow" aria-hidden="true">▼</span>
+  </button>
+  <div class="nv-collapse-body" id="adhd-settings-body">
+
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Reading Ruler</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="adhd.readingRuler" />
+    </label>
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Focus Tunnel (vignette)</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="adhd.focusTunnel" />
+    </label>
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Remove Ads &amp; Distractions</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="adhd.removeAds" />
+    </label>
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Stop Animations</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="adhd.removeAnimations" />
+    </label>
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Section Breaks</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="adhd.contentChunking" />
+    </label>
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Highlight Key Terms (AI)</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="adhd.highlightKeywords" />
+    </label>
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Reading Time Badge</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="adhd.showReadingTime" />
+    </label>
+
+  </div>
+</section>
+
+<!-- ─── Quick Settings: Autism ───────────────────────────────────────────────── -->
+<section class="nv-section nv-collapsible" id="settings-autism" hidden
+         aria-labelledby="autism-settings-heading">
+  <button class="nv-section-title nv-collapse-btn" id="autism-settings-heading"
+          aria-expanded="true" aria-controls="autism-settings-body">
+    🎨 Autism Settings
+    <span class="nv-collapse-arrow" aria-hidden="true">▼</span>
+  </button>
+  <div class="nv-collapse-body" id="autism-settings-body">
+
+    <div class="nv-slider-row">
+      <label for="sensory-dial" class="nv-switch-label">
+        Sensory Dial
+        <span class="nv-slider-hint">0 = most calm • 100 = no change</span>
+      </label>
+      <div class="nv-slider-wrap">
+        <span class="nv-slider-min">🧘</span>
+        <input type="range" id="sensory-dial" min="0" max="100" step="5"
+               class="nv-slider" data-path="autism.sensorDial" />
+        <span class="nv-slider-max">🌈</span>
+        <span class="nv-slider-value" id="sensory-dial-value">50</span>
+      </div>
+    </div>
+
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Stop All Animations</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="autism.removeAnimations" />
+    </label>
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Remove Flashing Elements</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="autism.removeFlashing" />
+    </label>
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Consistent Spacing</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="autism.consistentSpacing" />
+    </label>
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Hide Decorative Images</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="autism.hideDecorativeImages" />
+    </label>
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Soft Background Contrast</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="autism.softContrast" />
+    </label>
+
+  </div>
+</section>
+
+<!-- ─── Quick Settings: Dyslexia ─────────────────────────────────────────────── -->
+<section class="nv-section nv-collapsible" id="settings-dyslexia" hidden
+         aria-labelledby="dyslexia-settings-heading">
+  <button class="nv-section-title nv-collapse-btn" id="dyslexia-settings-heading"
+          aria-expanded="true" aria-controls="dyslexia-settings-body">
+    🔤 Dyslexia Settings
+    <span class="nv-collapse-arrow" aria-hidden="true">▼</span>
+  </button>
+  <div class="nv-collapse-body" id="dyslexia-settings-body">
+
+    <div class="nv-select-row">
+      <label class="nv-switch-label" for="font-choice">Accessibility Font</label>
+      <select id="font-choice" class="nv-select" data-path="dyslexia.fontChoice">
+        <option value="lexend">Lexend (Google)</option>
+        <option value="atkinson">Atkinson Hyperlegible</option>
+        <option value="opendyslexic">OpenDyslexic</option>
+      </select>
+    </div>
+
+    <div class="nv-slider-row">
+      <label class="nv-switch-label" for="font-size-slider">
+        Font Size: <span id="font-size-value">18</span>px
+      </label>
+      <input type="range" id="font-size-slider" min="14" max="28" step="1"
+             class="nv-slider" data-path="dyslexia.fontSize" />
+    </div>
+
+    <div class="nv-slider-row">
+      <label class="nv-switch-label" for="line-height-slider">
+        Line Height: <span id="line-height-value">1.8</span>
+      </label>
+      <input type="range" id="line-height-slider" min="1.2" max="2.5" step="0.1"
+             class="nv-slider" data-path="dyslexia.lineHeight" />
+    </div>
+
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Reading Ruler</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="dyslexia.readingRuler" />
+    </label>
+
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Syllable Rainbow 🌈</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="dyslexia.syllableHighlight" />
+    </label>
+
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Beeline Line Colors</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="dyslexia.beelineColors" />
+    </label>
+
+    <label class="nv-switch-row">
+      <span class="nv-switch-label">Reading Tint Overlay</span>
+      <input type="checkbox" class="nv-setting-toggle" data-path="dyslexia.colorOverlay" />
+    </label>
+
+    <div class="nv-color-row" id="overlay-color-row">
+      <label class="nv-switch-label" for="overlay-color">Tint Color</label>
+      <input type="color" id="overlay-color" value="#FFFDE7"
+             data-path="dyslexia.overlayColor" class="nv-color-input" />
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── Footer ───────────────────────────────────────────────────────────────── -->
+<footer class="nv-footer">
+  <button class="nv-footer-link" id="btn-clear-cache" title="Clear cached AI analyses">
+    Clear Cache
+  </button>
+</footer>
+
+<script src="modules/popup-core.js"></script>
+<script src="modules/popup-settings.js"></script>
+<script src="modules/popup-metrics.js"></script>
+<script src="modules/popup-ai.js"></script>
+<script src="modules/popup-listeners.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

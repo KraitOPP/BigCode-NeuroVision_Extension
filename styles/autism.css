@@ -1,0 +1,52 @@
+/**
+ * NeuroVision — Autism Mode Styles
+ * Conservative overrides — do not break page layout or navigation.
+ */
+
+html.nv-autism-mode {
+  scroll-behavior: auto;
+}
+
+/* Stable predictable links */
+html.nv-autism-mode a:not([class]) {
+  color: #4A6FA5;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(74, 111, 165, 0.35);
+}
+html.nv-autism-mode a:not([class]):visited { color: #7A5FA5; }
+html.nv-autism-mode a:not([class]):hover   { border-bottom-color: currentColor; }
+
+/* Predictable focus outlines */
+html.nv-autism-mode button:focus-visible,
+html.nv-autism-mode a:focus-visible,
+html.nv-autism-mode input:focus-visible {
+  outline: 3px solid #4A6FA5 !important;
+  outline-offset: 2px;
+}
+
+/* Stop marquee/ticker animations */
+html.nv-autism-mode [class*="ticker"],
+html.nv-autism-mode [class*="marquee"],
+html.nv-autism-mode marquee {
+  display: none !important;
+}
+
+/* Freeze carousel slides — don't break the container layout */
+html.nv-autism-mode [class*="carousel"] *,
+html.nv-autism-mode [class*="slider"] * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Consistent content spacing — only inside recognizable content areas */
+html.nv-autism-mode article p,
+html.nv-autism-mode main p,
+html.nv-autism-mode [role="main"] p {
+  margin-bottom: 1em !important;
+  line-height: 1.7 !important;
+}
+
+html.nv-autism-mode article li,
+html.nv-autism-mode main li {
+  margin-bottom: 0.5em !important;
+}

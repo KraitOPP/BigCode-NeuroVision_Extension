@@ -1,0 +1,109 @@
+/**
+ * NeuroVision — ADHD Mode Styles
+ * Research: BOIA ADHD-Friendly Design, WCAG 2.1, UK Gov Accessibility
+ * Applied when body has .nv-adhd-mode class
+ */
+
+/* ─── ADHD Base: Simplified Layout ─────────────────────────────────────────── */
+body.nv-adhd-mode {
+  --nv-max-width: 680px;
+}
+
+/* Research: consistent predictable font, minimum 16px, generous line-height */
+body.nv-adhd-mode article p,
+body.nv-adhd-mode main p,
+body.nv-adhd-mode [role="main"] p {
+  font-size: 16px !important;
+  line-height: 1.75 !important;
+  /* Research: max ~65ch line width reduces saccade length */
+  max-width: 680px !important;
+  /* Research: left-align only, no justification */
+  text-align: left !important;
+}
+
+/* Research: visible focus indicators — WCAG 2.4.11 (min 3px) */
+body.nv-adhd-mode *:focus-visible {
+  outline: 3px solid #4A6FA5 !important;
+  outline-offset: 3px !important;
+}
+
+/* Research: prefers-reduced-motion — stop all animations */
+@media (prefers-reduced-motion: reduce) {
+  body.nv-adhd-mode *,
+  body.nv-adhd-mode *::before,
+  body.nv-adhd-mode *::after {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+  }
+}
+
+/* Simplify navigation elements */
+body.nv-adhd-mode nav,
+body.nv-adhd-mode header {
+  opacity: 0.7;
+}
+
+/* Amplify content visibility */
+body.nv-adhd-mode article p,
+body.nv-adhd-mode main p,
+body.nv-adhd-mode [role="main"] p {
+  margin-bottom: 1.2em;
+}
+
+/* ─── Focus Mode: Soften non-content areas ─────────────────────────────────── */
+body.nv-adhd-mode aside,
+body.nv-adhd-mode .sidebar,
+body.nv-adhd-mode [class*="sidebar"],
+body.nv-adhd-mode [class*="widget"],
+body.nv-adhd-mode footer {
+  opacity: 0.4 !important;
+  transition: opacity 0.2s;
+}
+
+body.nv-adhd-mode aside:hover,
+body.nv-adhd-mode footer:hover {
+  opacity: 0.9 !important;
+}
+
+/* ─── Remove all scroll-triggered animations ───────────────────────────────── */
+body.nv-adhd-mode [data-aos],
+body.nv-adhd-mode [data-scroll],
+body.nv-adhd-mode .aos-animate {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* ─── Heading Clarity ───────────────────────────────────────────────────────── */
+body.nv-adhd-mode h1,
+body.nv-adhd-mode h2,
+body.nv-adhd-mode h3 {
+  clear: both;
+  margin-top: 1.5em;
+}
+
+/* ─── Focused paragraph (click to focus) ──────────────────────────────────── */
+body.nv-adhd-mode p:not(.nv-focused-para),
+body.nv-adhd-mode li:not(.nv-focused-para) {
+  transition: opacity 0.15s;
+}
+
+/* When any para is focused, dim others slightly */
+body.nv-adhd-mode:has(.nv-focused-para) p:not(.nv-focused-para),
+body.nv-adhd-mode:has(.nv-focused-para) li:not(.nv-focused-para) {
+  opacity: 0.55;
+}
+
+/* ─── Reader Mode: restore full opacity / visibility for all NV reader elements ─ */
+/* The rules above must not affect NeuroVision's own reader layout */
+body.nv-adhd-mode #nv-reader-overlay,
+body.nv-adhd-mode #nv-reader-overlay * {
+  opacity: revert !important;
+}
+/* Re-apply the specific opacity we actually want for reader elements */
+body.nv-adhd-mode #nv-reader-overlay .nv-rm-toolbar   { opacity: 1 !important; }
+body.nv-adhd-mode #nv-reader-overlay .nv-rm-sidebar   { opacity: 1 !important; }
+body.nv-adhd-mode #nv-reader-overlay .nv-rm-main      { opacity: 1 !important; }
+body.nv-adhd-mode #nv-reader-overlay .nv-rm-section   { opacity: 1 !important; }
+body.nv-adhd-mode #nv-reader-overlay .nv-rm-para      { opacity: 1 !important; }
+body.nv-adhd-mode #nv-reader-overlay .nv-rm-step-text { opacity: 1 !important; }

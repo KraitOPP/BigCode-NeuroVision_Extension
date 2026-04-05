@@ -1,0 +1,165 @@
+{
+  "_meta": {
+    "description": "NeuroVision Synthetic Evaluation Dataset",
+    "version": "1.0",
+    "purpose": "Testing readability scoring and cognitive load calculation against known values",
+    "created": "2026-04-04"
+  },
+  "readability_samples": [
+    {
+      "id": "R001",
+      "label": "Children's Book Level",
+      "text": "The dog ran fast. It was brown. The dog liked to play. It played in the park. The park was big and green.",
+      "expected_grade_max": 3,
+      "expected_ease_min": 85,
+      "condition_benefit": ["dyslexia", "adhd"]
+    },
+    {
+      "id": "R002",
+      "label": "Standard News Article",
+      "text": "Scientists discovered a new species of deep-sea fish last Tuesday. The creature, found at depths exceeding three kilometers, displays bioluminescent properties previously unknown to researchers. The discovery may help explain how life adapts to extreme environments.",
+      "expected_grade_min": 8,
+      "expected_grade_max": 12,
+      "expected_ease_min": 40,
+      "condition_benefit": ["adhd"]
+    },
+    {
+      "id": "R003",
+      "label": "Academic / Technical Text",
+      "text": "The epistemological implications of phenomenological reductionism necessitate a comprehensive reexamination of ontological presuppositions inherent within contemporary cognitive neuroscientific frameworks. Such paradigmatic reconceptualization fundamentally challenges anthropocentric assumptions.",
+      "expected_grade_min": 16,
+      "expected_ease_max": 20,
+      "condition_benefit": ["adhd", "dyslexia", "autism"]
+    },
+    {
+      "id": "R004",
+      "label": "Medical Information",
+      "text": "Attention-deficit/hyperactivity disorder (ADHD) is a neurodevelopmental disorder characterized by inattention, hyperactivity, and impulsivity. Symptoms typically emerge in childhood and may persist into adulthood. Treatment includes behavioral therapy and pharmacological interventions such as stimulant medications.",
+      "expected_grade_min": 10,
+      "expected_grade_max": 15,
+      "condition_benefit": ["adhd", "dyslexia"]
+    },
+    {
+      "id": "R005",
+      "label": "Figurative Language Heavy",
+      "text": "It was raining cats and dogs outside when Sarah finally hit the nail on the head. She was under the weather but once in a blue moon she had a golden opportunity that she couldn't let slip through her fingers.",
+      "expected_grade_max": 8,
+      "note": "Low grade but high autism difficulty due to figurative language",
+      "condition_benefit": ["autism"]
+    }
+  ],
+  "cognitive_load_samples": [
+    {
+      "id": "CL001",
+      "label": "Minimal blog post",
+      "metrics": {
+        "readingGrade": 6,
+        "wordCount": 300,
+        "uniqueColors": 4,
+        "animationCount": 0,
+        "adCount": 0,
+        "linkDensity": 0.05,
+        "nestedDepth": 4
+      },
+      "expected_load_max": 25
+    },
+    {
+      "id": "CL002",
+      "label": "Average news website",
+      "metrics": {
+        "readingGrade": 10,
+        "wordCount": 800,
+        "uniqueColors": 12,
+        "animationCount": 2,
+        "adCount": 5,
+        "linkDensity": 0.15,
+        "nestedDepth": 10
+      },
+      "expected_load_min": 30,
+      "expected_load_max": 60
+    },
+    {
+      "id": "CL003",
+      "label": "High-distraction news portal",
+      "metrics": {
+        "readingGrade": 12,
+        "wordCount": 2000,
+        "uniqueColors": 22,
+        "animationCount": 6,
+        "adCount": 12,
+        "linkDensity": 0.35,
+        "nestedDepth": 18
+      },
+      "expected_load_min": 65
+    }
+  ],
+  "syllable_split_samples": [
+    { "word": "cat", "expected_syllables": 1 },
+    { "word": "hello", "expected_syllables": 2 },
+    { "word": "beautiful", "expected_syllables": 3 },
+    { "word": "information", "expected_syllables": 4 },
+    { "word": "communication", "expected_syllables": 5 },
+    { "word": "a", "expected_syllables": 1 },
+    { "word": "the", "expected_syllables": 1 }
+  ],
+  "llm_simplification_benchmarks": [
+    {
+      "id": "LLM001",
+      "input": "The acceleration of gravitational forces on objects of varying mass demonstrates consistent proportionality.",
+      "target_grade": 6,
+      "acceptable_outputs": [
+        "Objects fall at the same speed when dropped.",
+        "Gravity pulls all objects down at the same rate.",
+        "Heavy and light objects fall at the same speed."
+      ],
+      "quality_criteria": {
+        "max_avg_syllables_per_word": 1.8,
+        "max_avg_words_per_sentence": 12,
+        "must_preserve_meaning": true
+      }
+    },
+    {
+      "id": "LLM002",
+      "input": "Individuals diagnosed with attention-deficit/hyperactivity disorder frequently demonstrate challenges with executive function, working memory capacity, and sustained cognitive engagement.",
+      "target_grade": 8,
+      "acceptable_outputs": [
+        "People with ADHD often have trouble focusing, remembering things, and staying on task.",
+        "ADHD makes it hard to pay attention, remember things, and finish tasks."
+      ],
+      "quality_criteria": {
+        "max_avg_syllables_per_word": 2.0,
+        "max_avg_words_per_sentence": 15,
+        "must_preserve_meaning": true
+      }
+    }
+  ],
+  "dom_noise_detection_samples": [
+    {
+      "id": "DOM001",
+      "html_class": "advertisement",
+      "expected_classification": "distraction"
+    },
+    {
+      "id": "DOM002",
+      "html_class": "article-body",
+      "expected_classification": "content"
+    },
+    {
+      "id": "DOM003",
+      "html_tag": "nav",
+      "expected_classification": "navigation"
+    },
+    {
+      "id": "DOM004",
+      "html_tag": "img",
+      "html_alt": "",
+      "expected_classification": "decorative-image"
+    },
+    {
+      "id": "DOM005",
+      "html_tag": "img",
+      "html_alt": "A photo of the Golden Gate Bridge at sunset",
+      "expected_classification": "content-image"
+    }
+  ]
+}

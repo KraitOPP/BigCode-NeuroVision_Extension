@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<!-- Open this file in a browser to generate and download the icons as PNG -->
+<html>
+<head><title>Generate Icons</title></head>
+<body>
+<script>
+const sizes = [16, 32, 48, 128];
+sizes.forEach(size => {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  // Background circle
+  ctx.fillStyle = '#4A6FA5';
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Brain emoji / simplified brain icon
+  ctx.fillStyle = 'white';
+  ctx.font = `bold ${size * 0.55}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🧠', size/2, size/2);
+
+  // Download
+  const link = document.createElement('a');
+  link.download = `icon${size}.png`;
+  link.href = canvas.toDataURL();
+  link.textContent = `Download icon${size}.png`;
+  link.style.display = 'block';
+  document.body.appendChild(link);
+  link.click();
+});
+</script>
+<p>Icons are being downloaded. Place them in the icons/ folder.</p>
+<p>If download doesn't work, right-click each canvas and save as PNG.</p>
+</body>
+</html>

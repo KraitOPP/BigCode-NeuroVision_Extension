@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<!--
+  NeuroVision Test Runner
+  Open this file in a browser to run the algorithm test suite.
+  Results appear in the browser console (F12).
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NeuroVision Tests</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #F8FAFC;
+      color: #1E293B;
+    }
+    h1 { color: #4A6FA5; }
+    .status { font-size: 18px; margin: 20px 0; }
+    #results { font-family: monospace; white-space: pre; font-size: 13px; background: #0F172A; color: #94A3B8; padding: 20px; border-radius: 10px; min-height: 200px; overflow-y: auto; max-height: 400px; }
+    .pass { color: #4ADE80; }
+    .fail { color: #F87171; }
+  </style>
+</head>
+<body>
+  <h1>🧠 NeuroVision — Algorithm Tests</h1>
+  <p>Tests run automatically. Check the output below and browser console.</p>
+  <div id="results">Loading…</div>
+
+  <script>
+    // Redirect console output to the results div
+    const resultsEl = document.getElementById('results');
+    const origLog = console.log.bind(console);
+    const origError = console.error.bind(console);
+
+    function appendLine(text, cls) {
+      const span = document.createElement('span');
+      span.className = cls || '';
+      span.textContent = text + '\n';
+      resultsEl.appendChild(span);
+    }
+
+    console.log = (...args) => {
+      origLog(...args);
+      const text = args.join(' ');
+      appendLine(text, text.includes('✅') ? 'pass' : text.includes('❌') ? 'fail' : '');
+    };
+    console.error = (...args) => {
+      origError(...args);
+      appendLine(args.join(' '), 'fail');
+    };
+
+    resultsEl.innerHTML = '';
+  </script>
+
+  <!-- Load modules under test -->
+  <script>window.NeuroVision = {};</script>
+  <script src="../utils/algorithms.js"></script>
+  <script src="test_algorithms.js"></script>
+</body>
+</html>

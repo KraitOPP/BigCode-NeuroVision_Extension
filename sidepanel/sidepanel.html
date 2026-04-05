@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeuroVision AI Panel</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+
+<header class="sp-header">
+  <span class="sp-logo" aria-hidden="true">🧠</span>
+  <div class="sp-header-info">
+    <h1 class="sp-title">NeuroVision AI</h1>
+    <p class="sp-subtitle" id="sp-domain">AI Reading Assistant</p>
+  </div>
+  <div class="sp-status-wrap">
+    <span class="sp-ai-dot" id="sp-ai-dot" title="AI provider status">●</span>
+    <span class="sp-model-label" id="sp-model-label">loading…</span>
+  </div>
+</header>
+
+<!-- ─── Onboarding Banner ───────────────────────────────────────────────────── -->
+<div class="sp-onboarding" id="sp-onboarding" hidden>
+  <div class="sp-ob-icon">🚀</div>
+  <div class="sp-ob-body">
+    <strong>Set up AI to get started</strong>
+    <p>Add a Groq API key for Kimi K2, or use Grok / OpenRouter, or run Ollama locally for free.</p>
+  </div>
+  <button class="sp-ob-cta" id="sp-ob-setup-btn">Configure →</button>
+</div>
+
+<!-- ─── Mode Tabs ──────────────────────────────────────────────────────────── -->
+<div class="sp-tabs" role="tablist" aria-label="AI modes">
+  <button class="sp-tab active" role="tab" data-tab="simplify"
+          aria-selected="true" id="tab-simplify">Simplify</button>
+  <button class="sp-tab" role="tab" data-tab="summary"
+          aria-selected="false" id="tab-summary">Summary</button>
+  <button class="sp-tab" role="tab" data-tab="concepts"
+          aria-selected="false" id="tab-concepts">Concepts</button>
+  <button class="sp-tab" role="tab" data-tab="tts"
+          aria-selected="false" id="tab-tts">🔊 Speak</button>
+  <button class="sp-tab" role="tab" data-tab="chat"
+          aria-selected="false" id="tab-chat">Ask</button>
+  <button class="sp-tab" role="tab" data-tab="settings"
+          aria-selected="false" id="tab-settings">⚙</button>
+</div>
+
+<!-- ─── Simplify Panel ────────────────────────────────────────────────────── -->
+<div class="sp-panel active" id="panel-simplify" role="tabpanel"
+     aria-labelledby="tab-simplify">
+  <p class="sp-hint">Rewrites page text at a simpler reading level, applied directly on the page.</p>
+
+  <div class="sp-control-row">
+    <label class="sp-label" for="target-grade">Reading Level</label>
+    <div class="sp-grade-row">
+      <input type="range" id="target-grade" min="4" max="14" step="1" value="8"
+             class="sp-slider" aria-label="Target grade level" />
+      <span class="sp-grade-value" id="grade-display">Grade 8</span>
+    </div>
+  </div>
+
+  <div class="sp-btn-row">
+    <button class="sp-btn primary" id="sp-btn-simplify-page">Whole Page</button>
+    <button class="sp-btn secondary" id="sp-btn-simplify-selection">Selection</button>
+  </div>
+
+  <p class="sp-status" id="status-simplify" aria-live="polite"></p>
+</div>
+
+<!-- ─── TTS Panel ─────────────────────────────────────────────────────────── -->
+<div class="sp-panel" id="panel-tts" role="tabpanel"
+     aria-labelledby="tab-tts" hidden>
+  <p class="sp-hint">Read text aloud using your browser's built-in voice. Select text on the page then click Speak, or read the whole page.</p>
+
+  <div class="sp-tts-controls">
+    <button class="sp-btn primary sp-tts-main" id="sp-btn-speak-selection">
+      🔊 Speak Selection
+    </button>
+    <button class="sp-btn secondary" id="sp-btn-speak-page">
+      📄 Whole Page
+    </button>
+  </div>
+
+  <div class="sp-tts-playing" id="sp-tts-playing" hidden>
+    <div class="sp-tts-now-playing">
+      <span class="sp-tts-wave">🔊</span>
+      <span class="sp-tts-text" id="sp-tts-current-text">Speaking…</span>
+    </div>
+    <div class="sp-tts-btns">
+      <button class="sp-btn secondary sp-btn-sm" id="sp-btn-tts-pause">⏸ Pause</button>
+      <button class="sp-btn secondary sp-btn-sm" id="sp-btn-tts-stop">■ Stop</button>
+    </div>
+  </div>
+
+  <div class="sp-tts-settings">
+    <div class="sp-control-row">
+      <label class="sp-label" for="sp-tts-rate">Speed</label>
+      <div class="sp-grade-row">
+        <input type="range" id="sp-tts-rate" min="0.5" max="2.5" step="0.1" value="1.0"
+               class="sp-slider" aria-label="Speech rate" />
+        <span class="sp-grade-value" id="sp-tts-rate-val">1.0×</span>
+      </div>
+    </div>
+    <div class="sp-control-row">
+      <label class="sp-label" for="sp-tts-pitch">Pitch</label>
+      <div class="sp-grade-row">
+        <input type="range" id="sp-tts-pitch" min="0.5" max="2.0" step="0.1" value="1.0"
+               class="sp-slider" aria-label="Speech pitch" />
+        <span class="sp-grade-value" id="sp-tts-pitch-val">1.0</span>
+      </div>
+    </div>
+    <div class="sp-control-row" id="sp-tts-voice-row">
+      <label class="sp-label" for="sp-tts-voice">Voice</label>
+      <select id="sp-tts-voice" class="sp-select">
+        <option value="">Default</option>
+      </select>
+    </div>
+  </div>
+
+  <p class="sp-hint" style="margin-top:10px;">
+    💡 Keyboard shortcut: <strong>Alt+S</strong> to speak selected text, <strong>Alt+T</strong> to toggle full page.
+  </p>
+
+  <p class="sp-status" id="status-tts" aria-live="polite"></p>
+
+<!-- ─── Summary Panel ────────────────────────────────────────────────────── -->
+<div class="sp-panel" id="panel-summary" role="tabpanel"
+     aria-labelledby="tab-summary" hidden>
+  <p class="sp-hint">Adds a bullet-point summary card at the top of the article.</p>
+
+  <button class="sp-btn primary full-width" id="sp-btn-summarize">
+    Summarize This Page
+  </button>
+
+  <p class="sp-status" id="status-summary" aria-live="polite"></p>
+</div>
+
+<!-- ─── Concepts Panel ────────────────────────────────────────────────────── -->
+<div class="sp-panel" id="panel-concepts" role="tabpanel"
+     aria-labelledby="tab-concepts" hidden>
+  <p class="sp-hint">Highlights key concepts directly in the page text.</p>
+
+  <button class="sp-btn primary full-width" id="sp-btn-keywords">
+    Highlight Key Concepts
+  </button>
+
+  <p class="sp-status" id="status-concepts" aria-live="polite"></p>
+</div>
+
+<!-- ─── Chat Panel ────────────────────────────────────────────────────────── -->
+<div class="sp-panel" id="panel-chat" role="tabpanel"
+     aria-labelledby="tab-chat" hidden>
+
+  <div class="sp-chat-messages" id="chat-messages" aria-live="polite">
+    <div class="sp-chat-system">
+      Ask me anything about this page. I'll use the article content to answer.
+    </div>
+  </div>
+
+  <div class="sp-chat-input-area">
+    <textarea class="sp-chat-input" id="chat-input"
+              placeholder="Ask a question about this page…"
+              rows="2" aria-label="Chat message"></textarea>
+    <button class="sp-btn primary sp-chat-send" id="sp-chat-send"
+            aria-label="Send message">Send</button>
+  </div>
+</div>
+
+<!-- ─── Settings Panel ─────────────────────────────────────────────────────── -->
+<div class="sp-panel" id="panel-settings" role="tabpanel"
+     aria-labelledby="tab-settings" hidden>
+
+  <!-- AI Provider section -->
+  <div class="sp-settings-section">
+    <h2 class="sp-settings-heading">AI Provider</h2>
+
+    <div class="sp-settings-row">
+      <label class="sp-label" for="ai-provider">Provider</label>
+      <select id="ai-provider" class="sp-select">
+        <option value="groq">Groq — Kimi K2 (moonshotai/kimi-k2-instruct-0905)</option>
+        <option value="ollama">Ollama (local, free)</option>
+      </select>
+    </div>
+
+    <div class="sp-settings-row" id="row-api-key">
+      <label class="sp-label" for="ai-api-key">API Key</label>
+      <div class="sp-key-row">
+        <input type="password" id="ai-api-key" class="sp-input"
+               placeholder="Enter your API key…" autocomplete="off" />
+        <button class="sp-btn secondary sp-btn-sm" id="btn-toggle-key"
+                aria-label="Show/hide key">👁</button>
+      </div>
+      <p class="sp-key-hint" id="api-key-hint">
+        Get key at <span id="api-key-link">console.groq.com/keys</span>
+      </p>
+    </div>
+
+    <div class="sp-settings-row" id="row-model">
+      <label class="sp-label" for="ai-model">Model</label>
+      <input type="text" id="ai-model" class="sp-input"
+             placeholder="e.g. moonshotai/kimi-k2-instruct-0905" />
+    </div>
+
+    <div class="sp-settings-row" id="row-ollama-url" hidden>
+      <label class="sp-label" for="ollama-url">Ollama URL</label>
+      <input type="text" id="ollama-url" class="sp-input"
+             value="http://localhost:11434" />
+    </div>
+
+    <button class="sp-btn primary full-width" id="btn-save-ai-config">
+      Save Configuration
+    </button>
+
+    <p class="sp-status" id="status-settings" aria-live="polite"></p>
+  </div>
+
+  <!-- Test connection -->
+  <div class="sp-settings-section">
+    <h2 class="sp-settings-heading">Connection</h2>
+    <div class="sp-connection-row">
+      <div class="sp-conn-item">
+        <span class="sp-ai-dot" id="ollama-health-dot">●</span>
+        <span class="sp-conn-label">Ollama</span>
+        <span class="sp-conn-detail" id="ollama-health-detail">—</span>
+      </div>
+      <div class="sp-conn-item">
+        <span class="sp-ai-dot" id="cloud-health-dot">●</span>
+        <span class="sp-conn-label">Cloud API</span>
+        <span class="sp-conn-detail" id="cloud-health-detail">—</span>
+      </div>
+    </div>
+    <button class="sp-btn secondary full-width" id="btn-test-connection">
+      Test Connection
+    </button>
+  </div>
+
+  <!-- Ollama onboarding guide -->
+  <div class="sp-settings-section" id="ollama-guide">
+    <h2 class="sp-settings-heading">Run Ollama Locally</h2>
+    <ol class="sp-guide-steps">
+      <li>Download from <strong>ollama.ai</strong></li>
+      <li>Open terminal: <code>set OLLAMA_ORIGINS=chrome-extension://*</code></li>
+      <li>Run: <code>ollama run qwen2.5:7b-instruct-q4_K_M</code></li>
+      <li>Click <em>Test Connection</em> above</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ─── Metrics Footer ────────────────────────────────────────────────────── -->
+<footer class="sp-footer" id="sp-metrics-footer">
+  <div class="sp-footer-metric">
+    <span class="sp-foot-label">Grade</span>
+    <span class="sp-foot-value" id="sp-m-grade">—</span>
+  </div>
+  <div class="sp-footer-metric">
+    <span class="sp-foot-label">Cognitive Load</span>
+    <span class="sp-foot-value" id="sp-m-load">—</span>
+  </div>
+  <div class="sp-footer-metric">
+    <span class="sp-foot-label">Read Time</span>
+    <span class="sp-foot-value" id="sp-m-time">—</span>
+  </div>
+  <div class="sp-footer-metric">
+    <span class="sp-foot-label">Dyslexia Time</span>
+    <span class="sp-foot-value" id="sp-m-dtime">—</span>
+  </div>
+</footer>
+
+<script src="../utils/groqUrl.js"></script>
+<script src="modules/sp-core.js"></script>
+<script src="modules/sp-data.js"></script>
+<script src="modules/sp-settings.js"></script>
+<script src="modules/sp-ai.js"></script>
+<script src="sidepanel.js"></script>
+</body>
+</html>

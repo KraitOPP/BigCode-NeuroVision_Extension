@@ -1,0 +1,84 @@
+/**
+ * NeuroVision — Dyslexia Mode Styles
+ * Research: British Dyslexia Association Style Guide, WCAG, BDA recommendations
+ * - Font ≥ 16px, line-height ≥ 1.5, letter-spacing 0.12em
+ * - Left align only, no hyphenation, no justified text
+ * - Paragraph spacing 2× line-height
+ * - Max ~65ch line width
+ * Font size / spacing overrides applied via JS (applySpacing) for live updates.
+ */
+
+html.nv-dyslexia-mode {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* No justified text — left-align prevents uneven spacing */
+html.nv-dyslexia-mode article p,
+html.nv-dyslexia-mode main p,
+html.nv-dyslexia-mode [role="main"] p,
+html.nv-dyslexia-mode article li,
+html.nv-dyslexia-mode main li {
+  text-align: left !important;
+  hyphens: none !important;
+}
+
+/* No small-caps / all-caps — confuses letter shapes */
+html.nv-dyslexia-mode article *,
+html.nv-dyslexia-mode main * {
+  font-variant: normal !important;
+  text-transform: none !important;
+  font-stretch: normal !important;
+}
+
+/* Thicker, offset link underlines for clarity */
+html.nv-dyslexia-mode a {
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
+}
+
+/* Paragraph spacing inside content areas */
+html.nv-dyslexia-mode article p,
+html.nv-dyslexia-mode main p {
+  margin-bottom: 1.2em !important;
+}
+
+/* List item breathing room */
+html.nv-dyslexia-mode article li,
+html.nv-dyslexia-mode main li {
+  margin-bottom: 0.5em !important;
+}
+
+/* Research: BDA — max line length 60-70ch */
+html.nv-dyslexia-mode article p,
+html.nv-dyslexia-mode main p {
+  max-width: 700px !important;
+}
+
+/* Research: prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  html.nv-dyslexia-mode * { animation: none !important; transition: none !important; }
+}
+
+/* Blockquote — visual anchor for content tracking */
+html.nv-dyslexia-mode blockquote {
+  border-left: 4px solid #4A90D9 !important;
+  padding-left: 1em !important;
+  margin-left: 0 !important;
+  background: rgba(74,144,217,0.04) !important;
+  border-radius: 0 4px 4px 0 !important;
+}
+
+/* Beeline paragraph color markers */
+html.nv-dyslexia-mode.nv-beeline article p:nth-child(6n+1),
+html.nv-dyslexia-mode.nv-beeline main p:nth-child(6n+1) { border-left: 4px solid #C0392B; padding-left: 8px; }
+html.nv-dyslexia-mode.nv-beeline article p:nth-child(6n+2),
+html.nv-dyslexia-mode.nv-beeline main p:nth-child(6n+2) { border-left: 4px solid #E67E22; padding-left: 8px; }
+html.nv-dyslexia-mode.nv-beeline article p:nth-child(6n+3),
+html.nv-dyslexia-mode.nv-beeline main p:nth-child(6n+3) { border-left: 4px solid #F1C40F; padding-left: 8px; }
+html.nv-dyslexia-mode.nv-beeline article p:nth-child(6n+4),
+html.nv-dyslexia-mode.nv-beeline main p:nth-child(6n+4) { border-left: 4px solid #27AE60; padding-left: 8px; }
+html.nv-dyslexia-mode.nv-beeline article p:nth-child(6n+5),
+html.nv-dyslexia-mode.nv-beeline main p:nth-child(6n+5) { border-left: 4px solid #2980B9; padding-left: 8px; }
+html.nv-dyslexia-mode.nv-beeline article p:nth-child(6n),
+html.nv-dyslexia-mode.nv-beeline main p:nth-child(6n)   { border-left: 4px solid #8E44AD; padding-left: 8px; }
