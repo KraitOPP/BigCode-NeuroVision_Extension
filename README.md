@@ -51,6 +51,7 @@ It combines:
 - **LLM integration** — Google Gemini 3.1 Pro (primary), Kimi K2 via Groq (fallback), or Ollama (local) for text simplification, summarization, and concept extraction
 - **Web Speech API TTS** — speak any selected text or full pages, with voice/speed/pitch controls
 
+![NeuroVision popup screenshot](images/popup-overview.png)
 ---
 
 ## The Problem We Solve
@@ -410,6 +411,7 @@ chrome://extensions/
 
 **Step 3:** Enable **Developer mode** (toggle in the top-right corner)
 
+![Developer Mode toggle](images/chrome_extensions_annotated.svg)
 
 **Step 4:** Click **"Load unpacked"**
 
@@ -480,6 +482,7 @@ Click the 🧠 extension icon to open the popup. It has four areas:
 
 ### ADHD Profile
 
+![ADHD settings panel](images/adhd.png)
 
 **How to activate:** Click the ⚡ ADHD card in the popup.
 
@@ -498,6 +501,7 @@ Click the 🧠 extension icon to open the popup. It has four areas:
 ---
 
 ### Autism Profile
+![Autism profile active](images/autism.png)
 
 **How to activate:** Click the 🎨 Autism card in the popup.
 
@@ -526,6 +530,7 @@ At dial position 20 (strong reduction), colors become near-greyscale, brightness
 
 ### Dyslexia Profile
 
+![Dyslexia profile active](images/dyslexia.png)
 
 **How to activate:** Click the 🔤 Dyslexia card in the popup.
 
@@ -559,6 +564,7 @@ The side panel has six tabs:
 
 #### Simplify Tab
 
+![Simplify tab](images/simplify.png)
 
 Rewrites page text at a target reading grade level, applied directly on the page DOM.
 
@@ -587,6 +593,7 @@ Highlights key terms and concepts throughout the article.
 
 #### 🔊 Speak Tab
 
+![TTS tab](images/speak.png)
 
 Reads text aloud using the browser's built-in Web Speech API — no API key or internet required.
 
@@ -625,12 +632,14 @@ Ask any question about the current page. The AI uses the page content as context
 The chat maintains a rolling history of the last 4 exchanges for conversational context. The page's first 2,000 words are included in every prompt as context. With Gemini, the full conversation history is passed as a multi-turn `contents` array; with Groq/Ollama, it uses the OpenAI `messages` format.
 
 #### Settings Tab
+![Ai Model Setting tab](images/models.png)
 Configure your AI provider (see [AI Provider Setup](#ai-provider-setup)).
 
 ---
 
 ### Transform Page (Reader Mode)
 
+![Transform page before/after](images/readerMode.png)
 
 The most powerful single action in NeuroVision. **Transform Page** completely rebuilds the current page into a clean, distraction-free reader mode — purpose-built for neurological accessibility.
 
