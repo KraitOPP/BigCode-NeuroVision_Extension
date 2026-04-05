@@ -84,6 +84,40 @@
   }
 
   /**
+   * Parses Gemini SSE stream (streamGenerateContent?alt=sse).
+   * Each `data:` line contains a JSON object with candidates[0].content.parts[0].text.
+   */
+  async function readGeminiSseStream(response, onChunk) {
+    if (!response.ok) {
+      const errText = await response.text().catch(() => "");
+      throw new Error(`Gemini API HTTP ${response.status}: ${errText.slice(0, 200)}`);
+    }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let full = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        const t = line.trim();
+        if (!t || t.startsWith(":") || !t.startsWith("data:")) continue;
+        const raw = t.replace(/^data:\s?/, "").trim();
+        if (raw === "[DONE]") return full;
+        try {
+          const chunk = JSON.parse(raw);
+          const delta = chunk.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          if (delta) { full += delta; onChunk(delta, full); }
+        } catch { /* partial line */ }
+      }
+    }
+    return full;
+  }
+
+  /**
    * @param {string} prompt
    * @param {function(string, string)} onChunk — (delta, accumulated)
    * @param {object} [streamOpts]
@@ -93,6 +127,28 @@
    */
   n.aiStream = async function aiStream(prompt, onChunk, streamOpts = {}) {
     const cfg = n.cloudConfig;
+
+    // ── Gemini ──────────────────────────────────────────────────────────────
+    if (cfg?.provider === "gemini" && cfg?.apiKey?.trim()) {
+      const model  = cfg.model || "gemini-3.1-pro";
+      const apiKey = cfg.apiKey.trim();
+      const url    = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}&alt=sse`;
+      const body   = {
+        contents: [{ parts: [{ text: prompt }], role: "user" }],
+        generationConfig: {
+          maxOutputTokens: streamOpts.maxCompletionTokens ?? 1000,
+          temperature: streamOpts.temperature ?? 0.6,
+        },
+      };
+      const sys = streamOpts.systemPrompt && String(streamOpts.systemPrompt).trim();
+      if (sys) body.systemInstruction = { parts: [{ text: sys }] };
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      return readGeminiSseStream(resp, onChunk);
+    }
 
     if (cfg?.provider !== "ollama" && cfg?.apiKey?.trim()) {
       const isGroq =

@@ -21,6 +21,12 @@
         defaultModel: "moonshotai/kimi-k2-instruct-0905",
         placeholder: "gsk_xxxxxxxxxxxxxxxx"
       },
+      gemini: {
+        label: "Google Gemini",
+        keyLink: "aistudio.google.com/apikey",
+        defaultModel: "gemini-3.1-pro",
+        placeholder: "AIza…"
+      },
       ollama: {
         label: "Ollama (local)",
         keyLink: null,

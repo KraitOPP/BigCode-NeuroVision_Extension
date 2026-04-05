@@ -47,6 +47,8 @@
     if (keyHint) keyHint.hidden = !preset.keyLink;
     if (keyInput && preset.placeholder) keyInput.placeholder = preset.placeholder;
     if (modelInput && !modelInput.value) modelInput.value = preset.defaultModel;
+    // Force update model placeholder when switching providers
+    if (modelInput && preset.defaultModel) modelInput.placeholder = `e.g. ${preset.defaultModel}`;
   };
 
   n.populateSettingsPanel = function populateSettingsPanel() {
@@ -75,13 +77,15 @@
                         || n.PROVIDERS[provider]?.defaultModel || "";
     const ollamaUrl   = (n.$("ollama-url")?.value || "").trim() || n.OLLAMA_BASE;
 
+    const BASE_URLS = {
+      groq:   "https://api.groq.com/openai/v1",
+      gemini: "https://generativelanguage.googleapis.com/v1beta",
+    };
     const config = {
       provider,
       apiKey,
       model,
-      baseUrl: provider === "groq"
-        ? "https://api.groq.com/openai/v1"
-        : "",
+      baseUrl: BASE_URLS[provider] || "",
       ollamaUrl,
       ollamaModel: provider === "ollama" ? model : "",
     };

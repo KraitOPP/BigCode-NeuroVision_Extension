@@ -49,11 +49,10 @@
     p.$("main-toggle").checked = settings.enabled ?? false;
 
     ["adhd", "autism", "dyslexia"].forEach((profile) => {
-      const card = p.$(`profile-${profile}`);
-      if (!card) return;
+      const row = p.$(`profile-${profile}`);
+      if (!row) return;
       const isOn = settings.profiles?.[profile] ?? false;
-      card.setAttribute("aria-pressed", String(isOn));
-      card.querySelector(".nv-profile-badge").textContent = isOn ? "ON" : "OFF";
+      row.setAttribute("aria-pressed", String(isOn));
 
       const panel = p.$(`settings-${profile}`);
       if (panel) panel.hidden = !isOn;
@@ -90,12 +89,57 @@
     const lineHeightEl = p.$("line-height-slider");
     if (lineHeightEl) {
       lineHeightEl.value = settings.dyslexia?.lineHeight ?? 1.8;
-      p.$("line-height-value").textContent = settings.dyslexia?.lineHeight ?? 1.8;
+      p.$("line-height-value").textContent = parseFloat(settings.dyslexia?.lineHeight ?? 1.8).toFixed(1);
     }
 
     const overlayColor = p.$("overlay-color");
     if (overlayColor) {
       overlayColor.value = settings.dyslexia?.overlayColor || "#FFFDE7";
+    }
+
+    p.renderFeatureTags(settings);
+  };
+
+  const FONT_LABELS = { lexend: "Lexend font", atkinson: "Atkinson Hyperlegible font", opendyslexic: "OpenDyslexic font" };
+
+  p.renderFeatureTags = function renderFeatureTags(settings) {
+    const container = p.$("feature-tags");
+    if (!container) return;
+    container.innerHTML = "";
+
+    function tag(icon, text) {
+      const el = document.createElement("span");
+      el.className = "nv-feature-tag";
+      el.textContent = `${icon} ${text}`;
+      container.appendChild(el);
+    }
+
+    if (settings.profiles?.adhd) {
+      if (settings.adhd?.readingRuler)      tag("📏", "Reading ruler");
+      if (settings.adhd?.focusTunnel)       tag("🔦", "Focus tunnel");
+      if (settings.adhd?.removeAds)         tag("🚫", "No ads");
+      if (settings.adhd?.removeAnimations)  tag("🧊", "No animations");
+      if (settings.adhd?.contentChunking)   tag("🔲", "Section breaks");
+      if (settings.adhd?.highlightKeywords) tag("🔑", "Key terms");
+    }
+
+    if (settings.profiles?.autism) {
+      if (settings.autism?.removeAnimations)  tag("🧊", "No animations");
+      if (settings.autism?.removeFlashing)    tag("⚡", "No flashing");
+      if (settings.autism?.softContrast)      tag("🌫", "Soft contrast");
+    }
+
+    if (settings.profiles?.dyslexia) {
+      const font = settings.dyslexia?.fontChoice || "lexend";
+      tag("🔤", FONT_LABELS[font] || font);
+      const fs = settings.dyslexia?.fontSize;
+      if (fs && fs !== 18) tag("🔠", `Font size ${fs}px`);
+      const lh = settings.dyslexia?.lineHeight;
+      if (lh && lh !== 1.8) tag("↕", `Line height ${parseFloat(lh).toFixed(1)}`);
+      if (settings.dyslexia?.readingRuler)     tag("📏", "Reading ruler");
+      if (settings.dyslexia?.syllableHighlight) tag("🌈", "Syllable rainbow");
+      if (settings.dyslexia?.beelineColors)    tag("🌈", "Beeline gradient");
+      if (settings.dyslexia?.colorOverlay)     tag("🟡", "Reading tint");
     }
   };
 

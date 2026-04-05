@@ -12,10 +12,10 @@
       if (resp?.success) p.settings = resp.data;
     });
 
-    document.querySelectorAll(".nv-profile-card").forEach((card) => {
-      card.addEventListener("click", async () => {
-        const profile = card.dataset.profile;
-        const currentlyOn = card.getAttribute("aria-pressed") === "true";
+    document.querySelectorAll(".nv-profile-row").forEach((row) => {
+      row.addEventListener("click", async () => {
+        const profile = row.dataset.profile;
+        const currentlyOn = row.getAttribute("aria-pressed") === "true";
         await p.applyProfileChange(profile, !currentlyOn);
       });
     });
@@ -70,17 +70,7 @@
       });
     }
 
-    document.querySelectorAll(".nv-collapse-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const isExpanded = btn.getAttribute("aria-expanded") === "true";
-        btn.setAttribute("aria-expanded", String(!isExpanded));
-      });
-    });
-
     p.$("btn-transform")?.addEventListener("click", p.runTransform);
-    p.$("btn-close-ai")?.addEventListener("click", () => {
-      p.$("ai-output").hidden = true;
-    });
 
     p.$("btn-clear-cache")?.addEventListener("click", async () => {
       await p.sendToTab(p.activeTab.id, "NV_CLEAR_CACHE");

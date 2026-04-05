@@ -10,11 +10,40 @@
     return cfg?.provider === "groq" || (cfg?.baseUrl || "").includes("api.groq.com");
   }
 
+  function isGeminiCfg(cfg) {
+    return cfg?.provider === "gemini";
+  }
+
+  async function geminiGenerate(prompt, cfg, maxTokens = 600, temperature = 0.3, systemInstruction = null) {
+    const model  = cfg.model || "gemini-3.1-pro";
+    const apiKey = cfg.apiKey.trim();
+    const url    = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const body   = {
+      contents: [{ parts: [{ text: prompt }], role: "user" }],
+      generationConfig: { maxOutputTokens: maxTokens, temperature },
+    };
+    if (systemInstruction) body.systemInstruction = { parts: [{ text: systemInstruction }] };
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(120000),
+    });
+    if (!resp.ok) {
+      const errBody = await resp.text().catch(() => "");
+      throw new Error(`Gemini API HTTP ${resp.status}: ${errBody.slice(0, 200)}`);
+    }
+    const data = await resp.json();
+    return (data.candidates?.[0]?.content?.parts?.[0]?.text || "").trim();
+  }
+
   function groqChatBase(cfg) {
     return self.NVGroqUrl.normalizeGroqBaseUrl(cfg.baseUrl);
   }
 
   async function cloudGenerate(prompt, cfg, maxTokens = 600, temperature = 0.3) {
+    // Gemini has its own function — never let it reach this OpenAI-compatible path
+    if (isGeminiCfg(cfg)) return geminiGenerate(prompt, cfg, maxTokens, temperature);
     const baseRoot = isGroqCfg(cfg) ? groqChatBase(cfg) : (cfg.baseUrl || "").replace(/\/$/, "");
     const url   = `${baseRoot}/chat/completions`;
     const model = cfg.model;
@@ -98,6 +127,11 @@
   }
 
   async function cloudTransform(prompt, cfg) {
+    // Gemini has its own function — never let it reach this OpenAI-compatible path
+    if (isGeminiCfg(cfg)) {
+      const sys = "You are a web accessibility expert. You MUST respond with valid JSON only. No markdown, no explanation, just the JSON object.";
+      return geminiGenerate(prompt, cfg, 4000, 0.1, sys);
+    }
     const baseRoot = isGroqCfg(cfg) ? groqChatBase(cfg) : (cfg.baseUrl || "").replace(/\/$/, "");
     const url   = `${baseRoot}/chat/completions`;
     const model = cfg.model;
@@ -157,6 +191,7 @@
 
     if (cfg.provider !== "ollama" && cfg.apiKey?.trim()) {
       try {
+        if (isGeminiCfg(cfg)) return await geminiGenerate(prompt, cfg, maxTokens, temperature);
         return await cloudGenerate(prompt, cfg, maxTokens, temperature);
       } catch (err) {
         console.warn("[NV] Cloud API failed, falling back to Ollama:", err.message);
@@ -172,6 +207,10 @@
 
     if (cfg.provider !== "ollama" && cfg.apiKey?.trim()) {
       try {
+        if (isGeminiCfg(cfg)) {
+          const sys = "You are a web accessibility expert. You MUST respond with valid JSON only. No markdown, no explanation, just the JSON object.";
+          return await geminiGenerate(prompt, cfg, 4000, 0.1, sys);
+        }
         return await cloudTransform(prompt, cfg);
       } catch (err) {
         console.warn("[NV] Cloud transform failed, falling back to Ollama:", err.message);
