@@ -21,10 +21,11 @@
     ruler: null,
     focusTunnel: null,
     badge: null,
-    removedElements: [], // { el, display } for restoration
+    removedElements: [],
     stopWatcher: null,
     keywords: [],
     settings: null,
+    _hoverBlockActive: false,
   };
 
   // ─── Distraction Removal ──────────────────────────────────────────────────
@@ -42,7 +43,7 @@
       STATE.removedElements.push(el);
     });
 
-    // Also target iframes (ads)
+    // Also target ad iframes
     document.querySelectorAll("iframe").forEach((el) => {
       const src = el.src || "";
       if (/doubleclick|adsystem|googlesyndication|adservice/i.test(src)) {
@@ -52,6 +53,180 @@
         STATE.removedElements.push(el);
       }
     });
+
+    // Block hover popups — intercept mouseenter/mouseover on elements that
+    // are likely to trigger popups (tooltips, preview cards, image overlays).
+    // We stop propagation on the event so the site's listener never fires.
+    _blockHoverPopups();
+  }
+
+  // ─── Hover Popup Blocker ──────────────────────────────────────────────────
+  // Two-pronged approach:
+  //  1. CSS — hides known popup containers the moment they appear/become visible
+  //  2. Event capture — stops mouseenter/mouseover on popup-triggering elements
+  //     before site listeners fire (handles JS-driven popups CSS can't catch)
+  //  3. MutationObserver — catches popups that are injected into DOM on hover
+  //     and immediately hides them (covers Wikipedia, MDN, GitHub, etc.)
+
+  // CSS class/id patterns that identify hover-triggered popups
+  const HOVER_POPUP_PATTERNS = /\b(tooltip|popover|preview|hover-card|hovercard|hover-popup|tippy|dropdown|flyout|float|peek|card-hover|wiki-tooltip|ref-popup|footnote-popup|citation-popup|image-hover|gallery-hover|img-popup|definition|defn-popup|mwe-popups|mw-tooltip|ext-discussiontools|reference-preview|page-preview|link-preview|popup-trigger|content-preview)\b/i;
+
+  // CSS rule that hides ALL known popup patterns immediately — covers cases
+  // where stopPropagation is too late (element-level listeners, shadow DOM, etc.)
+  const HOVER_POPUP_CSS = `
+    /* Wikipedia page previews */
+    .mwe-popups, .mwe-popups-container,
+    /* Wikipedia reference tooltips */
+    .mw-tooltip, .ext-discussiontools-init-replylink-buttons,
+    /* Generic tooltip/popover patterns */
+    [class*="tooltip"]:not([class*="nv-"]),
+    [class*="popover"]:not([class*="nv-"]),
+    [class*="preview"]:not([class*="nv-"]):not(img),
+    [class*="hover-card"]:not([class*="nv-"]),
+    [class*="hovercard"]:not([class*="nv-"]),
+    [class*="tippy"]:not([class*="nv-"]),
+    [id*="tooltip"]:not([id^="nv-"]),
+    [id*="popover"]:not([id^="nv-"]),
+    [id*="preview"]:not([id^="nv-"]),
+    /* Role-based */
+    [role="tooltip"]:not([id^="nv-"]),
+    /* Link preview cards (hover images + paragraphs) */
+    .link-preview, .page-preview, .content-preview,
+    .popup, .tippy-box, .tippy-content,
+    .v-tooltip, .b-tooltip, .el-tooltip__popper,
+    /* MDN, GitHub, Stack Overflow hover cards */
+    .question-hyperlink-popup, .s-popover,
+    .Popover, .Popover-message,
+    [data-tippy-content],
+    .ghd-tooltip {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+  `;
+
+  function _hoverBlockListener(e) {
+    const el = e.target;
+    if (!el || el.nodeType !== 1) return;
+    if (NV.domAnalyzer.isNvOwnElement(el)) return;
+
+    // Walk up to 4 ancestor levels checking for popup-trigger signals
+    let node = el;
+    for (let i = 0; i < 4; i++) {
+      if (!node || node === document.body) break;
+      const cls  = (typeof node.className === "string" ? node.className : node.className?.toString?.() || "");
+      const id   = node.id || "";
+      const role = node.getAttribute?.("role") || "";
+      const aria = node.getAttribute?.("aria-haspopup") || "";
+      if (
+        HOVER_POPUP_PATTERNS.test(cls) ||
+        HOVER_POPUP_PATTERNS.test(id) ||
+        role === "tooltip" ||
+        aria === "true" || aria === "dialog"
+      ) {
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+      }
+      node = node.parentElement;
+    }
+  }
+
+  let _hoverPopupObserver = null;
+
+  function _hideIfPopup(node) {
+    if (node.nodeType !== 1) return;
+    if (NV.domAnalyzer.isNvOwnElement(node)) return;
+    const cls  = (typeof node.className === "string" ? node.className : node.className?.toString?.() || "");
+    const id   = node.id || "";
+    const role = node.getAttribute?.("role") || "";
+    if (
+      HOVER_POPUP_PATTERNS.test(cls) ||
+      HOVER_POPUP_PATTERNS.test(id) ||
+      role === "tooltip"
+    ) {
+      node.style.setProperty("display",    "none",   "important");
+      node.style.setProperty("visibility", "hidden", "important");
+      node.style.setProperty("opacity",    "0",      "important");
+      node.style.setProperty("pointer-events", "none", "important");
+    }
+  }
+
+  function _startHoverPopupObserver() {
+    if (_hoverPopupObserver) return;
+    _hoverPopupObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        // Handle newly inserted nodes
+        for (const node of mutation.addedNodes) {
+          _hideIfPopup(node);
+          // Also check children of inserted containers
+          if (node.nodeType === 1) {
+            node.querySelectorAll?.("*").forEach?.(_hideIfPopup);
+          }
+        }
+        // Handle attribute changes (class/style) on existing nodes —
+        // Wikipedia pre-inserts .mwe-popups and shows it via class change
+        if (mutation.type === "attributes" && mutation.target) {
+          _hideIfPopup(mutation.target);
+        }
+      }
+    });
+    _hoverPopupObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class", "style", "aria-hidden"],
+    });
+  }
+
+  function _stopHoverPopupObserver() {
+    if (_hoverPopupObserver) {
+      _hoverPopupObserver.disconnect();
+      _hoverPopupObserver = null;
+    }
+  }
+
+  function _blockHoverPopups() {
+    if (STATE._hoverBlockActive) return;
+    STATE._hoverBlockActive = true;
+
+    // 1. Inject CSS to hide known popup containers instantly
+    const style = document.createElement("style");
+    style.id = "nv-adhd-no-hover-popups";
+    style.textContent = HOVER_POPUP_CSS;
+    document.head.appendChild(style);
+
+    // 2. Capture-phase event blocking
+    document.addEventListener("mouseenter", _hoverBlockListener, true);
+    document.addEventListener("mouseover",  _hoverBlockListener, true);
+    // Also intercept focus events (keyboard users can trigger tooltips)
+    document.addEventListener("focusin",    _hoverBlockListener, true);
+
+    // 3. Scan existing DOM for pre-inserted popup elements (Wikipedia
+    //    injects .mwe-popups at page load and shows it via class changes)
+    document.querySelectorAll(
+      '.mwe-popups, .mwe-popups-container, [class*="tooltip"], [class*="popover"], [class*="preview"]:not(img), [role="tooltip"]'
+    ).forEach((el) => {
+      if (NV.domAnalyzer.isNvOwnElement(el)) return;
+      el.style.setProperty("display",    "none",   "important");
+      el.style.setProperty("visibility", "hidden", "important");
+      el.style.setProperty("opacity",    "0",      "important");
+      el.style.setProperty("pointer-events", "none", "important");
+    });
+
+    // 4. MutationObserver for dynamically injected/modified popups (Wikipedia, etc.)
+    _startHoverPopupObserver();
+  }
+
+  function _unblockHoverPopups() {
+    if (!STATE._hoverBlockActive) return;
+    STATE._hoverBlockActive = false;
+    document.getElementById("nv-adhd-no-hover-popups")?.remove();
+    document.removeEventListener("mouseenter", _hoverBlockListener, true);
+    document.removeEventListener("mouseover",  _hoverBlockListener, true);
+    document.removeEventListener("focusin",    _hoverBlockListener, true);
+    _stopHoverPopupObserver();
   }
 
   function restoreDistractions() {
@@ -61,6 +236,7 @@
       delete el.__nvOrigDisplay;
     });
     STATE.removedElements = [];
+    _unblockHoverPopups();
   }
 
   // ─── Reading Ruler ────────────────────────────────────────────────────────
@@ -176,20 +352,62 @@
 
   // ─── Stop Animations ──────────────────────────────────────────────────────
   function stopAnimations() {
-    const style = document.createElement("style");
-    style.id = "nv-adhd-no-animation";
-    style.textContent = `
-      *, *::before, *::after {
-        animation-duration: 0.001s !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.001s !important;
+    // 1. Freeze CSS animations and transitions
+    if (!document.getElementById("nv-adhd-no-animation")) {
+      const style = document.createElement("style");
+      style.id = "nv-adhd-no-animation";
+      style.textContent = `
+        *, *::before, *::after {
+          animation-duration: 0.001s !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.001s !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // 2. Freeze GIF images — CSS cannot stop GIFs; must replace src with
+    //    a canvas snapshot of the current frame.
+    document.querySelectorAll("img").forEach((img) => {
+      if (img.__nvGifFrozen) return;
+      const src = img.currentSrc || img.src || "";
+      if (!src || !/\.gif(\?|$)/i.test(src)) return;
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width  = img.naturalWidth  || img.width  || 1;
+        canvas.height = img.naturalHeight || img.height || 1;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const frozen = canvas.toDataURL("image/png");
+        img.__nvGifFrozen = true;
+        img.__nvOrigSrc   = img.src;
+        img.src = frozen;
+      } catch {
+        // Cross-origin GIF — cannot draw to canvas; hide it instead
+        img.__nvGifFrozen  = true;
+        img.__nvGifHidden  = true;
+        img.__nvOrigSrc    = img.src;
+        img.__nvOrigDisplay = img.style.display;
+        img.style.setProperty("display", "none", "important");
       }
-    `;
-    document.head.appendChild(style);
+    });
   }
 
   function restoreAnimations() {
     document.getElementById("nv-adhd-no-animation")?.remove();
+
+    // Restore frozen GIFs
+    document.querySelectorAll("img").forEach((img) => {
+      if (!img.__nvGifFrozen) return;
+      if (img.__nvOrigSrc) img.src = img.__nvOrigSrc;
+      if (img.__nvGifHidden) {
+        img.style.display = img.__nvOrigDisplay || "";
+        delete img.__nvGifHidden;
+        delete img.__nvOrigDisplay;
+      }
+      delete img.__nvGifFrozen;
+      delete img.__nvOrigSrc;
+    });
   }
 
   // ─── Reading Time Badge ───────────────────────────────────────────────────
@@ -377,6 +595,20 @@
         break;
       case "contentChunking":
         value ? applyContentChunking() : removeContentChunking();
+        break;
+      case "highlightKeywords":
+        if (!value) {
+          removeKeywordHighlights();
+        } else {
+          // Fetch keywords via LLM then highlight them on the page
+          const text = (NV.contentState?.metrics?.mainText || "").slice(0, 2000);
+          if (!text) break;
+          NV.ollama.extractKeywords(text)
+            .then((keywords) => {
+              if (keywords && keywords.length) highlightKeywords(keywords);
+            })
+            .catch(() => { /* LLM unavailable — silently skip */ });
+        }
         break;
     }
   }

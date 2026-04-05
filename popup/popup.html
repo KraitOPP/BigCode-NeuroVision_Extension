@@ -27,163 +27,54 @@
 <div class="nv-metrics-bar" id="metrics-bar" aria-label="Page metrics">
   <div class="nv-metric">
     <span class="nv-metric-value" id="m-grade">—</span>
-    <span class="nv-metric-label">Grade</span>
+    <span class="nv-metric-label">Reading level</span>
   </div>
   <div class="nv-metric">
     <span class="nv-metric-value" id="m-load">—</span>
-    <span class="nv-metric-label">CogLoad</span>
+    <span class="nv-metric-label">Brain load</span>
   </div>
   <div class="nv-metric">
     <span class="nv-metric-value" id="m-time">—</span>
-    <span class="nv-metric-label">Read</span>
+    <span class="nv-metric-label">Read time</span>
   </div>
   <div class="nv-metric">
     <span class="nv-metric-value" id="m-words">—</span>
-    <span class="nv-metric-label">Words</span>
+    <span class="nv-metric-label">Word count</span>
   </div>
 </div>
 
-<!-- ─── Profiles ─────────────────────────────────────────────────────────────── -->
+<!-- ─── Profiles (simple toggles only) ───────────────────────────────────────── -->
 <div class="nv-profiles">
 
-  <!-- ADHD -->
   <button class="nv-profile-row" id="profile-adhd" data-profile="adhd"
           aria-pressed="false" aria-label="Toggle ADHD profile">
     <span class="nv-profile-icon" aria-hidden="true">⚡</span>
-    <span class="nv-profile-name">ADHD</span>
-    <span class="nv-profile-desc">Focus &amp; reduce clutter</span>
+    <div class="nv-profile-info">
+      <span class="nv-profile-name">ADHD</span>
+      <span class="nv-profile-desc">Focus mode · Remove distractions</span>
+    </div>
     <span class="nv-profile-toggle" aria-hidden="true"></span>
   </button>
 
-  <div class="nv-profile-settings" id="settings-adhd" hidden>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Reading Ruler</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="adhd.readingRuler" />
-    </label>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Focus Tunnel</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="adhd.focusTunnel" />
-    </label>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Remove Ads &amp; Distractions</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="adhd.removeAds" />
-    </label>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Stop Animations</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="adhd.removeAnimations" />
-    </label>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Section Breaks</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="adhd.contentChunking" />
-    </label>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Highlight Key Terms</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="adhd.highlightKeywords" />
-    </label>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Reading Time Badge</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="adhd.showReadingTime" />
-    </label>
-  </div>
-
-  <!-- Autism -->
   <button class="nv-profile-row" id="profile-autism" data-profile="autism"
           aria-pressed="false" aria-label="Toggle Autism profile">
     <span class="nv-profile-icon" aria-hidden="true">🎨</span>
-    <span class="nv-profile-name">Autism</span>
-    <span class="nv-profile-desc">Calm colors, no motion</span>
+    <div class="nv-profile-info">
+      <span class="nv-profile-name">Autism</span>
+      <span class="nv-profile-desc">Calm colors · No motion</span>
+    </div>
     <span class="nv-profile-toggle" aria-hidden="true"></span>
   </button>
 
-  <div class="nv-profile-settings" id="settings-autism" hidden>
-    <div class="nv-slider-row">
-      <label for="sensory-dial" class="nv-switch-label">
-        Sensory Dial <span class="nv-slider-hint">0 calm · 100 default</span>
-      </label>
-      <div class="nv-slider-wrap">
-        <span class="nv-slider-min">🧘</span>
-        <input type="range" id="sensory-dial" min="0" max="100" step="5"
-               class="nv-slider" data-path="autism.sensorDial" />
-        <span class="nv-slider-max">🌈</span>
-        <span class="nv-slider-value" id="sensory-dial-value">50</span>
-      </div>
-    </div>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Stop All Animations</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="autism.removeAnimations" />
-    </label>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Remove Flashing</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="autism.removeFlashing" />
-    </label>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Consistent Spacing</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="autism.consistentSpacing" />
-    </label>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Hide Decorative Images</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="autism.hideDecorativeImages" />
-    </label>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Soft Background Contrast</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="autism.softContrast" />
-    </label>
-  </div>
-
-  <!-- Dyslexia -->
   <button class="nv-profile-row" id="profile-dyslexia" data-profile="dyslexia"
           aria-pressed="false" aria-label="Toggle Dyslexia profile">
     <span class="nv-profile-icon" aria-hidden="true">🔤</span>
-    <span class="nv-profile-name">Dyslexia</span>
-    <span class="nv-profile-desc">Fonts, spacing, guides</span>
+    <div class="nv-profile-info">
+      <span class="nv-profile-name">Dyslexia</span>
+      <span class="nv-profile-desc">Readable fonts · Spacing · Guides</span>
+    </div>
     <span class="nv-profile-toggle" aria-hidden="true"></span>
   </button>
-
-  <div class="nv-profile-settings" id="settings-dyslexia" hidden>
-    <div class="nv-select-row">
-      <label class="nv-switch-label" for="font-choice">Accessibility Font</label>
-      <select id="font-choice" class="nv-select" data-path="dyslexia.fontChoice">
-        <option value="lexend">Lexend</option>
-        <option value="atkinson">Atkinson Hyperlegible</option>
-        <option value="opendyslexic">OpenDyslexic</option>
-      </select>
-    </div>
-    <div class="nv-slider-row">
-      <label class="nv-switch-label" for="font-size-slider">
-        Font Size <span class="nv-slider-value-inline" id="font-size-value">18</span>px
-      </label>
-      <input type="range" id="font-size-slider" min="14" max="28" step="1"
-             class="nv-slider nv-slider-full" data-path="dyslexia.fontSize" />
-    </div>
-    <div class="nv-slider-row">
-      <label class="nv-switch-label" for="line-height-slider">
-        Line Height <span class="nv-slider-value-inline" id="line-height-value">1.8</span>
-      </label>
-      <input type="range" id="line-height-slider" min="1.2" max="2.5" step="0.1"
-             class="nv-slider nv-slider-full" data-path="dyslexia.lineHeight" />
-    </div>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Reading Ruler</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="dyslexia.readingRuler" />
-    </label>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Syllable Rainbow 🌈</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="dyslexia.syllableHighlight" />
-    </label>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Beeline Line Colors</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="dyslexia.beelineColors" />
-    </label>
-    <label class="nv-switch-row">
-      <span class="nv-switch-label">Reading Tint Overlay</span>
-      <input type="checkbox" class="nv-setting-toggle" data-path="dyslexia.colorOverlay" />
-    </label>
-    <div class="nv-color-row" id="overlay-color-row">
-      <label class="nv-switch-label" for="overlay-color">Tint Color</label>
-      <input type="color" id="overlay-color" value="#FFFDE7"
-             data-path="dyslexia.overlayColor" class="nv-color-input" />
-    </div>
-  </div>
 
 </div>
 
@@ -203,8 +94,149 @@
   </button>
 </div>
 
-<!-- ─── Feature Tags ─────────────────────────────────────────────────────────── -->
+<!-- ─── Active Features (tags) ───────────────────────────────────────────────── -->
 <div class="nv-feature-tags" id="feature-tags" aria-label="Active features"></div>
+
+<!-- ─── Advanced Settings (collapsible) ──────────────────────────────────────── -->
+<details class="nv-advanced" id="advanced-panel">
+  <summary class="nv-advanced-summary">
+    <span class="nv-advanced-icon">⚙️</span>
+    <span class="nv-advanced-label">Advanced Settings</span>
+    <span class="nv-advanced-arrow" aria-hidden="true">›</span>
+  </summary>
+
+  <div class="nv-advanced-body">
+
+    <!-- ADHD Settings -->
+    <div class="nv-adv-section" id="settings-adhd">
+      <div class="nv-adv-section-header">
+        <span>⚡</span> ADHD Features
+      </div>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Reading Ruler</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="adhd.readingRuler" />
+      </label>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Focus Tunnel</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="adhd.focusTunnel" />
+      </label>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Remove Ads &amp; Distractions</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="adhd.removeAds" />
+      </label>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Stop Animations</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="adhd.removeAnimations" />
+      </label>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Section Breaks</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="adhd.contentChunking" />
+      </label>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Highlight Key Terms</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="adhd.highlightKeywords" />
+      </label>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Reading Time Badge</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="adhd.showReadingTime" />
+      </label>
+    </div>
+
+    <!-- Autism Settings -->
+    <div class="nv-adv-section" id="settings-autism">
+      <div class="nv-adv-section-header">
+        <span>🎨</span> Autism Features
+      </div>
+      <div class="nv-slider-row">
+        <label for="sensory-dial" class="nv-switch-label">
+          Sensory Dial <span class="nv-slider-hint">0 calm · 100 default</span>
+        </label>
+        <div class="nv-slider-wrap">
+          <span class="nv-slider-min">🧘</span>
+          <input type="range" id="sensory-dial" min="0" max="100" step="5"
+                 class="nv-slider" data-path="autism.sensorDial" />
+          <span class="nv-slider-max">🌈</span>
+          <span class="nv-slider-value" id="sensory-dial-value">50</span>
+        </div>
+      </div>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Stop All Animations</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="autism.removeAnimations" />
+      </label>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Consistent Spacing</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="autism.consistentSpacing" />
+      </label>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Hide Decorative Images</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="autism.hideDecorativeImages" />
+      </label>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Soft Background Contrast</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="autism.softContrast" />
+      </label>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">💬 Idiom Decoder (AI)</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="autism.idiomDecoder" />
+      </label>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">🏷️ Tone Indicators (AI)</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="autism.toneIndicators" />
+      </label>
+    </div>
+
+    <!-- Dyslexia Settings -->
+    <div class="nv-adv-section" id="settings-dyslexia">
+      <div class="nv-adv-section-header">
+        <span>🔤</span> Dyslexia Features
+      </div>
+      <div class="nv-select-row">
+        <label class="nv-switch-label" for="font-choice">Accessibility Font</label>
+        <select id="font-choice" class="nv-select" data-path="dyslexia.fontChoice">
+          <option value="lexend">Lexend</option>
+          <option value="atkinson">Atkinson Hyperlegible</option>
+          <option value="opendyslexic">OpenDyslexic</option>
+        </select>
+      </div>
+      <div class="nv-slider-row">
+        <label class="nv-switch-label" for="font-size-slider">
+          Font Size <span class="nv-slider-value-inline" id="font-size-value">18</span>px
+        </label>
+        <input type="range" id="font-size-slider" min="14" max="28" step="1"
+               class="nv-slider nv-slider-full" data-path="dyslexia.fontSize" />
+      </div>
+      <div class="nv-slider-row">
+        <label class="nv-switch-label" for="line-height-slider">
+          Line Height <span class="nv-slider-value-inline" id="line-height-value">1.8</span>
+        </label>
+        <input type="range" id="line-height-slider" min="1.2" max="2.5" step="0.1"
+               class="nv-slider nv-slider-full" data-path="dyslexia.lineHeight" />
+      </div>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Reading Ruler</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="dyslexia.readingRuler" />
+      </label>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Syllable Rainbow 🌈</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="dyslexia.syllableHighlight" />
+      </label>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Beeline Line Colors</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="dyslexia.beelineColors" />
+      </label>
+      <label class="nv-switch-row">
+        <span class="nv-switch-label">Reading Tint Overlay</span>
+        <input type="checkbox" class="nv-setting-toggle" data-path="dyslexia.colorOverlay" />
+      </label>
+      <div class="nv-color-row" id="overlay-color-row">
+        <label class="nv-switch-label" for="overlay-color">Tint Color</label>
+        <input type="color" id="overlay-color" value="#FFFDE7"
+               data-path="dyslexia.overlayColor" class="nv-color-input" />
+      </div>
+    </div>
+
+  </div>
+</details>
 
 <!-- ─── Footer ───────────────────────────────────────────────────────────────── -->
 <footer class="nv-footer">

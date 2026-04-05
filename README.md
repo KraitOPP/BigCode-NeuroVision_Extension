@@ -26,15 +26,13 @@
 1. [Project Structure](#project-structure)
 2. [What is NeuroVision?](#what-is-neurovision)
 3. [The Problem We Solve](#the-problem-we-solve)
-4. [Architecture Overview](#architecture-overview)
-5. [Technology Stack](#technology-stack)
-6. [AI Models & Configuration](#ai-models--configuration)
-7. [Core Algorithms & Data Structures](#core-algorithms--data-structures)
-8. [Installation & Setup](#installation--setup)
+4. [Technology Stack](#technology-stack)
+5. [AI Models & Configuration](#ai-models--configuration)
+6. [Installation & Setup](#installation--setup)
    - [Prerequisites](#prerequisites)
    - [Load the Extension](#load-the-extension)
    - [AI Provider Setup (Gemini / Groq / Ollama)](#ai-provider-setup)
-9. [How to Use — Feature Guide](#how-to-use--feature-guide)
+7. [How to Use — Feature Guide](#how-to-use--feature-guide)
    - [Popup Interface](#popup-interface)
    - [ADHD Profile](#adhd-profile)
    - [Autism Profile](#autism-profile)
@@ -42,8 +40,9 @@
    - [AI Side Panel](#ai-side-panel)
    - [Speak Selection (TTS)](#speak-selection-tts)
    - [Transform Page (Reader Mode)](#transform-page-reader-mode)
-10. [Model Evaluation & Testing](#model-evaluation--testing)
-11. [Performance & Scalability](#performance--scalability)
+8. [Core Algorithms & Data Structures](#core-algorithms--data-structures)
+9. [Model Evaluation & Testing](#model-evaluation--testing)
+10. [Performance & Scalability](#performance--scalability)
 ---
 
 ## Project Structure
@@ -157,44 +156,6 @@ The web was not designed with these users in mind. NeuroVision retrofits **every
 
 ---
 
-## Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────┐
-│                  Chrome Extension                    │
-│                                                     │
-│  ┌──────────┐   ┌──────────────┐   ┌────────────┐  │
-│  │  Popup   │   │  Side Panel  │   │  Content   │  │
-│  │  (UI)    │   │  (AI Panel)  │   │  Scripts   │  │
-│  └────┬─────┘   └──────┬───────┘   └─────┬──────┘  │
-│       │                │                 │          │
-│       └────────────────┼─────────────────┘          │
-│                        │  chrome.runtime.sendMessage │
-│                   ┌────▼──────────┐                 │
-│                   │ Service Worker │                 │
-│                   │  (Background) │                 │
-│                   └────┬──────────┘                 │
-└────────────────────────┼────────────────────────────┘
-                         │ fetch()
-           ┌─────────────┼──────────────┬─────────────┐
-           ▼             ▼              ▼              ▼
-      ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌──────────┐
-      │ Gemini  │   │  Groq   │   │ Ollama  │   │   Web    │
-      │ 3.1 Pro │   │ Cloud   │   │ (Local) │   │  Speech  │
-      │(Primary)│   │(Fallbk) │   │ :11434  │   │   TTS    │
-      └─────────┘   └─────────┘   └─────────┘   └──────────┘
-```
-
-**Three communication layers:**
-
-1. **Popup → Background** via `chrome.runtime.sendMessage` — settings, profile toggles, health checks
-2. **Side Panel → Content Script** via `chrome.tabs.sendMessage` — trigger AI jobs directly on the page
-3. **Background → LLM APIs** via `fetch()` — prompt construction and response parsing
-
-All LLM calls originate from the **background service worker** (for CORS and CSP compliance) except streaming calls in the Side Panel which go direct to Gemini/Groq for lower latency.
-
----
-
 ## Technology Stack
 
 | Layer | Technology | Why |
@@ -215,7 +176,7 @@ All LLM calls originate from the **background service worker** (for CORS and CSP
 
 ## AI Models & Configuration
 
-NeuroVision supports three AI providers in a priority chain: **Gemini 3.1 Pro → Groq → Ollama**. You only need one configured, but the chain ensures graceful degradation if a provider is unavailable.
+NeuroVision supports four AI providers in a priority chain: **Gemini 3.1 Pro → Groq (Kimi K2) → Chrome Prompt API → Ollama**. You only need one configured, but the chain ensures graceful degradation if a provider is unavailable.
 
 ---
 
@@ -239,20 +200,6 @@ https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro:streamGen
 Batch operations (keyword extraction, page transform JSON) use the non-streaming `generateContent` endpoint.
 
 **Get a key:** https://aistudio.google.com/app/apikey
-
-**How Gemini is called in NeuroVision:**
-
-The `systemInstruction` field enforces output constraints globally — preventing the model from adding markdown headers, bullet symbols, or fabricating facts not present in the source text:
-
-```json
-{
-  "systemInstruction": {
-    "parts": [{ "text": "You are a plain-language editor. Rewrite the text at Grade [N] reading level. Preserve all facts. Use short sentences. No markdown. No bullet points." }]
-  },
-  "contents": [{ "role": "user", "parts": [{ "text": "<article text here>" }] }],
-  "generationConfig": { "temperature": 0.3, "maxOutputTokens": 2048 }
-}
-```
 
 **Streaming parsing:**
 
@@ -281,9 +228,23 @@ for await (const chunk of response.body) {
 
 These limits are sufficient for typical individual use. The LRU cache ensures repeated visits to the same article never consume additional quota.
 
+**Production scaling with Gemini:**
+
+For a deployed version of NeuroVision serving many users, the architecture shifts from per-user API keys to a shared backend proxy:
+
+```
+User's Browser → Extension → Your Backend (Node/Python) → Gemini API
+                                    ↓
+                             Rate limit pooling
+                             Per-user quota tracking
+                             Request caching layer
+```
+
+Google's Vertex AI endpoint (`aiplatform.googleapis.com`) is the production path — it supports OAuth2 service accounts instead of plain API keys, offers higher rate limits, SLA guarantees, and per-project billing controls. A single Vertex AI project can serve thousands of concurrent users with quota adjustable on request.
+
 ---
 
-### Option B — Groq (Speed fallback)
+### Option B — Groq (Speed Fallback)
 
 **Model:** `moonshotai/kimi-k2-instruct-0905`
 
@@ -298,6 +259,57 @@ Kimi K2 is a 1-trillion-parameter Mixture-of-Experts model by Moonshot AI, serve
 **Get a key:** https://console.groq.com/keys
 
 **Base URL:** `https://api.groq.com/openai/v1` *(must include `/openai/v1` — see [groqUrl.js](utils/groqUrl.js))*
+
+---
+
+### Option C — Chrome Prompt API (Zero Setup, Browser Built-in)
+
+**Model:** Gemini Nano (on-device)
+
+The Chrome Prompt API is a built-in AI capability shipping in Chrome 127+. It runs **Gemini Nano directly inside the browser** — no API key, no server, no network call at all. This is the closest NeuroVision gets to a completely serverless, zero-cost deployment for end users.
+
+**Why Chrome Prompt API?**
+- **Zero setup for users** — no API key, no account, works out of the box once enabled
+- **Fully on-device** — data never leaves the user's machine; ideal for privacy-sensitive users
+- **No server cost** — inference runs on the user's GPU/NPU; scales to any number of users for free
+- **No rate limits** — each user runs their own local model instance
+
+**Limitations vs Gemini 3.1 Pro:**
+| | Chrome Prompt API | Gemini 3.1 Pro |
+|---|---|---|
+| Context window | ~6K tokens | 128K tokens |
+| Speed | 3–8s (800 words) | ~400ms first token |
+| Quality | Good for short passages | Best overall |
+| Privacy | Fully on-device | Data sent to Google |
+| Cost | Free | Free (with limits) |
+
+**How to enable (currently experimental):**
+1. Open `chrome://flags`
+2. Enable **`#prompt-api-for-gemini-nano`**
+3. Enable **`#optimization-guide-on-device-model`**
+4. Restart Chrome
+5. In NeuroVision side panel → Settings → select **"Chrome (Built-in)"**
+
+**How NeuroVision calls it:**
+
+```javascript
+// Check availability
+const canCreate = await window.ai.languageModel.capabilities();
+if (canCreate.available !== 'no') {
+  const session = await window.ai.languageModel.create({
+    systemPrompt: 'You are a plain-language editor...',
+    temperature: 0.3,
+    topK: 3,
+  });
+  const result = await session.prompt(pageText);
+}
+```
+
+**Production scaling with Chrome Prompt API:**
+
+Because inference runs entirely on the client, the Chrome Prompt API is uniquely suited for large-scale deployment — **each new user adds zero marginal cost to the operator**. A school deploying NeuroVision to 50,000 students pays the same as deploying it to 50. The trade-off is quality and context length: Gemini Nano handles short passages well but struggles with long-form articles requiring cross-paragraph coherence.
+
+The ideal production architecture uses the Chrome Prompt API as the **default free tier** (instant, private, zero-cost for most users) with Gemini API as an opt-in upgrade for users who need higher quality on long documents.
 
 ---
 
@@ -367,108 +379,17 @@ curl http://localhost:11434/api/generate -d '{
 
 ---
 
-## Core Algorithms & Data Structures
+## Installation & Setup
 
-NeuroVision implements all readability and cognitive analysis in pure JavaScript — no external ML libraries. This ensures zero install size, instant startup, and full offline capability for all non-LLM features.
+### Prerequisites
 
-### 1. Flesch-Kincaid Grade Level
+- **Google Chrome** version 116 or later (for Manifest V3 + Side Panel API)
+- **An AI provider** (pick one):
+  - Google AI Studio account with Gemini API key (free and recommended), OR
+  - Groq account with API key (free), OR
+  - Ollama installed locally
 
-**File:** [`utils/algorithms.js`](utils/algorithms.js)
-
-```
-FK Grade = 0.39 × (words/sentences) + 11.8 × (syllables/words) − 15.59
-```
-
-This formula, validated on thousands of English texts, predicts the U.S. school grade level required to understand a passage. NeuroVision uses it to:
-- Display real-time reading difficulty in the popup metrics bar
-- Decide whether auto-simplification is needed (if grade > user's target)
-- Prompt the LLM with a target grade for simplification
-
-**Syllable counting** uses a vowel-cluster heuristic — groups of consecutive vowels (`[aeiouy]+`) with a silent-e stripping pass. This matches the Flesch formula's original methodology and achieves ~94% accuracy on the CMU Pronouncing Dictionary benchmark.
-
-### 2. Flesch Reading Ease Score
-
-```
-FRE = 206.835 − 1.015 × (words/sentences) − 84.6 × (syllables/words)
-```
-
-Ranges from 0 (very difficult) to 100 (very easy). Standard reading is ~60–70. Used alongside FK grade for a two-dimensional readability view.
-
-### 3. Cognitive Load Score (Novel Composite Metric)
-
-NeuroVision introduces a **7-factor weighted composite score** not found in existing readability literature:
-
-```javascript
-cognitiveLoad =
-  readingGrade  × 0.30 +   // Text difficulty
-  wordCount     × 0.15 +   // Raw length
-  uniqueColors  × 0.15 +   // Visual noise (sampled first 100 elements)
-  animationCount × 0.20 +  // Motion distraction (CSS keyframes + inline)
-  adCount       × 0.10 +   // Promotional clutter
-  linkDensity   × 0.05 +   // Navigation overload
-  nestedDepth   × 0.05     // DOM complexity
-```
-
-This metric uniquely accounts for **visual and structural** load, not just text difficulty — a page with simple text but 47 animated ads scores very high. All sub-factors are normalized to [0, 1] before weighting.
-
-### 4. Content Extraction (Priority-Based Selector Chain)
-
-```javascript
-const CONTENT_SELECTORS = [
-  "article", "main", '[role="main"]',
-  ".post-content", ".article-body", ".entry-content",
-  ".content-body", ".story-body", "#content", "#main", ".main-content"
-];
-```
-
-Falls back to a **greedy DOM scorer** if no semantic element is found: iterates all `div, section, article, p` elements, scores each by `(word count) − (link word count × 2)`, and selects the highest-scoring candidate. The penalty for link-rich elements eliminates navbars and footers.
-
-### 5. LRU Cache with djb2 Fingerprinting
-
-**File:** [`utils/cache.js`](utils/cache.js)
-
-Page analyses are expensive (LLM round-trip). The cache:
-- **Key:** djb2 hash of `(URL without query/hash) + (first 600 chars of main text)`
-- **TTL:** 24 hours
-- **Capacity:** 60 entries (LRU eviction: sorted by timestamp, oldest deleted)
-- **Storage:** `chrome.storage.local` (survives browser restarts, max 10MB)
-
-The URL normalization strips query parameters and hash fragments so `article.html?utm_source=twitter#comments` and `article.html` hit the same cache entry.
-
-### 6. Syllable Rainbow (Dyslexia Feature)
-
-The **Syllable Rainbow** is a novel visualization that alternates colors at syllable boundaries, making word structure visible to readers with dyslexia. Implementation:
-
-1. **Text node walker** — traverses the DOM finding all text nodes inside readable elements
-2. **Syllable splitter** — consonant-vowel boundary detection (`CV` split rule with minimum 2-char chunks)
-3. **Inline span injection** — each syllable wrapped in `<span class="nv-syl-N">` with rotating CSS classes (5 colors)
-4. **Restoration map** — original text nodes stored in a `WeakMap` for clean teardown
-
-### 7. Beeline Colors (Dyslexia Feature)
-
-Inspired by the commercial Beeline Reader, this feature applies a **per-line color gradient** using a rainbow cycle. The eye follows the color change at line breaks, reducing mis-tracking — a common dyslexic reading error. Implementation uses absolute-positioned `div` overlays with `pointer-events: none`, positioned over each line via `getBoundingClientRect()`.
-
-### 8. Sensory Dial (Autism Feature)
-
-A **single slider** (0–100) maps to five visual parameters simultaneously:
-
-```javascript
-function sensorDialToParams(dialValue) {
-  const reduction = 1 - dialValue / 100;
-  return {
-    saturation: 100 - reduction × 70,    // CSS filter: saturate()
-    brightness:  95 - reduction × 15,    // CSS filter: brightness()
-    animSpeed: reduction > 0.5 ? "0.001s" : "0.3s",
-    contrast:  100 - reduction × 20,     // CSS filter: contrast()
-  };
-}
-```
-
-This design decision — mapping a complex multi-dimensional sensory space onto a single intuitive control — is rooted in occupational therapy literature showing that autistic individuals prefer fewer, simpler controls over expert configuration panels.
-
-### 9. DOM Mutation Watcher (ADHD Feature)
-
-Many sites inject ads dynamically after page load. The ADHD module installs a `MutationObserver` that watches `document.body` for new subtree additions and runs the distraction-removal filter on any newly added nodes. This prevents "ad creep" where hidden ads reappear or new ones load after the initial pass.
+No Node.js, no build tool, no npm install required. This is a pure browser extension.
 
 ---
 
@@ -606,6 +527,8 @@ Click the 🧠 extension icon to open the popup. It has four areas:
 | **Consistent Spacing** | Enforces uniform `margin` and `padding` on all content elements, eliminating unpredictable layout jumps | Toggle ON |
 | **Hide Decorative Images** | Hides `<img>` elements that are not in `<figure>` or don't have meaningful `alt` text (heuristic: `alt=""` or `alt` missing in decorative contexts) | Toggle ON |
 | **Soft Background Contrast** | Reduces contrast between text and background to a gentler ratio | Toggle ON |
+| **💬 Idiom Decoder (AI)** | Scans the page text with the LLM to find idioms and figurative expressions (e.g. "hit the nail on the head"), then wraps each one in a dashed purple underline. Hover or click to reveal a plain-English tooltip explaining the literal meaning. Research by Happé (1993) and Kalandadze (2019) shows autistic individuals consistently struggle with figurative language — this feature makes implicit meaning explicit. | Toggle ON; requires AI provider configured. Idioms appear underlined in purple. |
+| **🏷️ Tone Indicators (AI)** | Sends each paragraph to the LLM for tone classification, then prepends a small badge to paragraphs with non-neutral tone. Labels: ℹ️ Informative, ⚠️ Warning, 💭 Opinion, 😏 Sarcastic, ❤️ Emotional, ❓ Question. Makes implied social intent explicit — critical for users who process language literally. | Toggle ON; badges appear at the start of classified paragraphs. Processed in batches of 6. |
 
 **The Sensory Dial in depth:**
 
@@ -748,6 +671,101 @@ The most powerful single action in NeuroVision. **Transform Page** completely re
 
 ---
 
+
+## Core Algorithms & Data Structures
+
+NeuroVision implements all readability and cognitive analysis in pure JavaScript — no external ML libraries. This ensures zero install size, instant startup, and full offline capability for all non-LLM features.
+
+**File:** [`utils/algorithms.js`](utils/algorithms.js)
+
+### 1. Flesch-Kincaid Grade Level
+
+Predicts the U.S. school grade level needed to understand a passage. Used to show real-time reading difficulty in the popup and to prompt the LLM with a target grade.
+
+```
+FK Grade = 0.39 × (words/sentences) + 11.8 × (syllables/words) − 15.59
+```
+
+Syllable counting uses a vowel-cluster heuristic (`[aeiouy]+` with silent-e stripping), achieving ~94% accuracy on the CMU Pronouncing Dictionary benchmark.
+
+### 2. Flesch Reading Ease Score
+
+A companion metric to FK grade — higher score means easier to read (0 = very hard, 100 = very easy). Standard adult reading is ~60–70.
+
+```
+FRE = 206.835 − 1.015 × (words/sentences) − 84.6 × (syllables/words)
+```
+
+### 3. Cognitive Load Score (Novel Composite Metric)
+
+A **7-factor weighted score** that goes beyond text difficulty to account for visual and structural overload — something no existing readability formula does. A page with simple text but 47 animated ads still scores very high.
+
+```javascript
+cognitiveLoad =
+  readingGrade   × 0.30 +   // Text difficulty
+  wordCount      × 0.15 +   // Raw length
+  uniqueColors   × 0.15 +   // Visual noise (sampled first 100 elements)
+  animationCount × 0.20 +   // Motion distraction (CSS keyframes + inline)
+  adCount        × 0.10 +   // Promotional clutter
+  linkDensity    × 0.05 +   // Navigation overload
+  nestedDepth    × 0.05     // DOM complexity
+```
+
+All sub-factors are normalized to [0, 1] before weighting.
+
+### 4. Content Extraction
+
+A priority-based selector chain finds the main article content:
+
+```javascript
+const CONTENT_SELECTORS = [
+  "article", "main", '[role="main"]',
+  ".post-content", ".article-body", ".entry-content",
+  ".content-body", ".story-body", "#content", "#main", ".main-content"
+];
+```
+
+If no semantic element matches, a greedy DOM scorer iterates all `div, section, article, p` elements, scores each by `(word count) − (link word count × 2)`, and picks the highest. The link penalty eliminates navbars and footers.
+
+### 5. LRU Cache with djb2 Fingerprinting
+
+**File:** [`utils/cache.js`](utils/cache.js)
+
+Avoids redundant LLM calls for pages you've already visited:
+- **Key:** djb2 hash of URL (without query/hash) + first 600 chars of main text
+- **TTL:** 24 hours · **Capacity:** 60 entries (LRU eviction) · **Storage:** `chrome.storage.local`
+
+URL normalization means `article.html?utm_source=twitter#comments` and `article.html` hit the same cache entry.
+
+### 6. Syllable Rainbow (Dyslexia)
+
+Alternates colors at syllable boundaries to make word structure visible. Works by walking all text nodes in the DOM, splitting each word at consonant-vowel boundaries, and wrapping each syllable in a `<span class="nv-syl-N">` with one of 5 rotating CSS colors. Original text nodes are stored in a `WeakMap` for clean teardown.
+
+### 7. Beeline Line Colors (Dyslexia)
+
+Applies a unique color to each line so the eye always returns to the correct line after a line break — a common dyslexic mis-tracking error. Uses absolute-positioned `div` overlays with `pointer-events: none`, positioned over each line via `getBoundingClientRect()`.
+
+### 8. Sensory Dial (Autism)
+
+Maps a single 0–100 value to five CSS filter parameters simultaneously — giving autistic users a single intuitive control instead of five expert sliders:
+
+```javascript
+function sensorDialToParams(dialValue) {
+  const reduction = 1 - dialValue / 100;
+  return {
+    saturation: 100 - reduction * 70,    // CSS filter: saturate()
+    brightness:  95 - reduction * 15,    // CSS filter: brightness()
+    animSpeed: reduction > 0.5 ? "0.001s" : "0.3s",
+    contrast:  100 - reduction * 20,     // CSS filter: contrast()
+  };
+}
+```
+
+Rooted in occupational therapy literature showing autistic individuals prefer fewer, simpler controls over expert configuration panels.
+
+### 9. DOM Mutation Watcher (ADHD)
+
+Many sites inject ads dynamically after page load. The ADHD module installs a `MutationObserver` on `document.body` that runs the distraction-removal filter on any newly added nodes (debounced at 100ms). This prevents "ad creep" where ads reappear or new ones load after the initial cleanup pass.
 ## Model Evaluation & Testing
 
 ### Running the Algorithm Tests
@@ -856,4 +874,3 @@ All prompts use `temperature=0.3` and `seed=42` (Ollama) for reproducibility —
 **Memory footprint:** The extension adds approximately 2–4MB of JS heap per tab when active profiles are enabled (syllable DOM nodes for dyslexia are the largest contributor). Deactivating a profile fully tears down and restores all DOM mutations.
 
 ---
-

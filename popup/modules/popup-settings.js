@@ -48,14 +48,13 @@
 
     p.$("main-toggle").checked = settings.enabled ?? false;
 
+    // Update profile toggle state only — detailed settings are always
+    // visible inside the Advanced panel, not gated by profile active state
     ["adhd", "autism", "dyslexia"].forEach((profile) => {
       const row = p.$(`profile-${profile}`);
       if (!row) return;
       const isOn = settings.profiles?.[profile] ?? false;
       row.setAttribute("aria-pressed", String(isOn));
-
-      const panel = p.$(`settings-${profile}`);
-      if (panel) panel.hidden = !isOn;
     });
 
     p.renderToggles(settings, "adhd", [
@@ -64,8 +63,8 @@
     ]);
 
     p.renderToggles(settings, "autism", [
-      "removeAnimations", "removeFlashing", "consistentSpacing",
-      "hideDecorativeImages", "softContrast",
+      "removeAnimations", "consistentSpacing",
+      "hideDecorativeImages", "softContrast", "idiomDecoder", "toneIndicators",
     ]);
     const dial = settings.autism?.sensorDial ?? 50;
     const dialEl = p.$("sensory-dial");
@@ -124,9 +123,11 @@
     }
 
     if (settings.profiles?.autism) {
-      if (settings.autism?.removeAnimations)  tag("🧊", "No animations");
-      if (settings.autism?.removeFlashing)    tag("⚡", "No flashing");
-      if (settings.autism?.softContrast)      tag("🌫", "Soft contrast");
+      if (settings.autism?.removeAnimations)   tag("🧊", "No animations");
+      if (settings.autism?.softContrast)       tag("🌫", "Soft contrast");
+      if (settings.autism?.idiomDecoder)       tag("💬", "Idiom decoder");
+      if (settings.autism?.toneIndicators)     tag("🏷️", "Tone indicators");
+      if (settings.autism?.consistentSpacing)  tag("↔", "Even spacing");
     }
 
     if (settings.profiles?.dyslexia) {

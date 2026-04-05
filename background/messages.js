@@ -97,8 +97,18 @@
 
       case MSG.SIMPLIFY_TEXT: {
         const { text, targetGrade = 8 } = message.payload;
-        const prompt = `Rewrite at grade ${targetGrade} reading level. Short sentences. Simple words. Keep meaning. Return ONLY rewritten text.\n\n${text.slice(0, 2000)}`;
-        NVBG.aiGenerate(prompt, 600)
+        const prompt = `Rewrite the following text at a Grade ${targetGrade} reading level.
+
+Rules:
+- Keep EVERY fact, detail, number, and idea from the original — do not remove or skip anything
+- Break long sentences into shorter ones using simple words
+- Do not summarise — the output should be roughly the same length as the input
+- Do not add any new information
+- Return ONLY the rewritten text, no explanations or headings
+
+Text to rewrite:
+${text.slice(0, 2000)}`;
+        NVBG.aiGenerate(prompt, 1500)
           .then((result) => sendResponse({ success: true, data: result }))
           .catch((err) => sendResponse({ success: false, error: err.message }));
         return true;
@@ -135,6 +145,51 @@
         const { prompt } = message.payload;
         NVBG.aiTransform(prompt)
           .then((result) => sendResponse({ success: true, data: result }))
+          .catch((err) => sendResponse({ success: false, error: err.message }));
+        return true;
+      }
+
+      case MSG.DETECT_IDIOMS: {
+        const { text } = message.payload;
+        const prompt = `Find all idioms, metaphors, and figurative expressions in this text.
+Return ONLY a JSON array. Each item: {"phrase": "the exact phrase from the text", "meaning": "plain literal explanation in simple words"}.
+Return [] if none found. Do not include literal or straightforward language.
+Text:
+${(text || "").slice(0, 3000)}`;
+        NVBG.aiGenerate(prompt, 800, 0.2)
+          .then((raw) => {
+            try {
+              const match = raw.match(/\[[\s\S]*\]/);
+              const data = match ? JSON.parse(match[0]) : [];
+              sendResponse({ success: true, data });
+            } catch {
+              sendResponse({ success: true, data: [] });
+            }
+          })
+          .catch((err) => sendResponse({ success: false, error: err.message }));
+        return true;
+      }
+
+      case MSG.DETECT_TONE: {
+        const { paragraphs } = message.payload;
+        const numbered = (paragraphs || [])
+          .map((t, i) => `[${i}] ${t.slice(0, 300)}`)
+          .join("\n\n");
+        const prompt = `Classify the tone of each numbered paragraph below.
+Use ONLY these labels: informative, warning, opinion, sarcastic, emotional, question.
+Return ONLY a JSON array with one object per paragraph in order: [{"tone":"informative"},{"tone":"warning"},...].
+Paragraphs:
+${numbered}`;
+        NVBG.aiGenerate(prompt, 400, 0.1)
+          .then((raw) => {
+            try {
+              const match = raw.match(/\[[\s\S]*\]/);
+              const data = match ? JSON.parse(match[0]) : [];
+              sendResponse({ success: true, data });
+            } catch {
+              sendResponse({ success: true, data: [] });
+            }
+          })
           .catch((err) => sendResponse({ success: false, error: err.message }));
         return true;
       }

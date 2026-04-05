@@ -26,6 +26,8 @@
     CHECK_OLLAMA:     "NV_CHECK_OLLAMA",
     PAGE_METRICS:     "NV_PAGE_METRICS",
     OLLAMA_HEALTH:    "NV_OLLAMA_HEALTH",
+    DETECT_IDIOMS:    "NV_DETECT_IDIOMS",
+    DETECT_TONE:      "NV_DETECT_TONE",
   };
 
   NVBG.DEFAULT_SETTINGS = {
@@ -38,8 +40,9 @@
     },
     autism: {
       reduceSaturation: true, saturationLevel: 40, removeAnimations: true,
-      removeFlashing: true, consistentSpacing: true, hideDecorativeImages: false,
+      consistentSpacing: true, hideDecorativeImages: false,
       softContrast: false, sensorDial: 50,
+      idiomDecoder: true, toneIndicators: false,
     },
     dyslexia: {
       customFont: true, fontChoice: "lexend", letterSpacing: 0.15,
